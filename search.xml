@@ -2873,14 +2873,11 @@
 <li>端云状态轮询与自动停播逻辑： 默认 1000 ms 轮询云端状态，下播或 roomId 失效时自动停播。</li>
 </ol>
 <h3 id="处理崩溃报告与调用栈还原"><a href="#处理崩溃报告与调用栈还原" class="headerlink" title="处理崩溃报告与调用栈还原"></a>处理崩溃报告与调用栈还原</h3><ol>
-<li><p>dump 和调用栈分别是什么：<br>调用栈记录函数调用关系：例如用户开相机 → 初始化设备 → 创建 reader → 出错。机器运行时主要留下地址，符号文件把地址对应到函数名、源码文件和行号。<br>dump 是出错时线程、寄存器和部分内存等现场数据；PDB 是某次构建的符号映射。<strong>dump 保存现场，PDB 帮助解释现场</strong>。 不是拿到任何同名 PDB 都能还原，必须匹配实际 EXE&#x2F;DLL 的构建。</p>
-</li>
-<li><p>仓库实际做了哪些步骤<br>注册未处理 SEH、CRT 无效参数、纯虚函数、<code>std::terminate</code> 和信号等入口；出错后建立 CrashDumps 目录，调用 <code>MiniDumpWriteDump</code> 写 dump，再输出文本栈。<br>文本栈使用 <code>SymInitialize</code> 加载符号，<code>StackWalk64</code> 沿栈遍历，<code>SymFromAddr</code> 查函数名，<code>SymGetLineFromAddr64</code> 查行号。<code>g_IsInCrashHandler</code> 用于避免处理器递归进入，最后终止进程。<br>“访问冲突”常指读写无效地址；“纯虚调用”可能与对象生命周期异常有关。但异常名只告诉你症状，不能直接断定根因。最顶层可能只是崩溃处理函数，真正错误还要看异常上下文和之前调用。</p>
-</li>
-<li><p>Release 为什么还要保留符号<br>CourseStudio.pro 在 Release 中增加 <code>/Zi</code> 与 <code>/DEBUG</code>，便于保留调试符号。Release 仍可以优化；有符号不等于变量都完整保留，优化会造成内联或变量不可见。<br>一个能讲清的排查过程：先确认版本与匹配符号，再打开 dump，找异常线程、异常地址和调用链，检查对象生命周期、参数和并发时序，结合复现步骤验证假设。不能只看到某库在栈顶就断言库有 bug。<br>当前在崩溃进程内使用 Qt、堆分配和符号解析，严重内存损坏或死锁时报告仍可能失败；手动捕获上下文的 terminate&#x2F;signal 路径也未必保留最初抛错点。应讲“提升现场可诊断性”，不要承诺所有崩溃都能完整还原。</p>
-</li>
+<li>dump 和调用栈分别是什么：<br>调用栈记录函数调用关系：例如用户开相机 → 初始化设备 → 创建 reader → 出错。机器运行时主要留下地址，符号文件把地址对应到函数名、源码文件和行号。<br>dump 是出错时线程、寄存器和部分内存等现场数据；PDB 是某次构建的符号映射。<strong>dump 保存现场，PDB 帮助解释现场</strong>。 不是拿到任何同名 PDB 都能还原，必须匹配实际 EXE&#x2F;DLL 的构建。</li>
+<li>仓库实际做了哪些步骤<br>注册未处理 SEH、CRT 无效参数、纯虚函数、<code>std::terminate</code> 和信号等入口；出错后建立 CrashDumps 目录，调用 <code>MiniDumpWriteDump</code> 写 dump，再输出文本栈。<br>文本栈使用 <code>SymInitialize</code> 加载符号，<code>StackWalk64</code> 沿栈遍历，<code>SymFromAddr</code> 查函数名，<code>SymGetLineFromAddr64</code> 查行号。<code>g_IsInCrashHandler</code> 用于避免处理器递归进入，最后终止进程。<br>“访问冲突”常指读写无效地址；“纯虚调用”可能与对象生命周期异常有关。但异常名只告诉你症状，不能直接断定根因。最顶层可能只是崩溃处理函数，真正错误还要看异常上下文和之前调用。</li>
+<li>Release 为什么还要保留符号<br>CourseStudio.pro 在 Release 中增加 <code>/Zi</code> 与 <code>/DEBUG</code>，便于保留调试符号。Release 仍可以优化；有符号不等于变量都完整保留，优化会造成内联或变量不可见。<br>一个能讲清的排查过程：先确认版本与匹配符号，再打开 dump，找异常线程、异常地址和调用链，检查对象生命周期、参数和并发时序，结合复现步骤验证假设。不能只看到某库在栈顶就断言库有 bug。<br>当前在崩溃进程内使用 Qt、堆分配和符号解析，严重内存损坏或死锁时报告仍可能失败；手动捕获上下文的 terminate&#x2F;signal 路径也未必保留最初抛错点。应讲“提升现场可诊断性”，不要承诺所有崩溃都能完整还原。</li>
 </ol>
-<p><strong>可复述</strong>：“我用 dump 保留现场，用对应构建的 PDB 还原函数和源码位置，再结合异常线程及日志查生命周期和并发问题。Release 也生成符号，但优化和现场损坏会限制可见信息。”</p>
+<p><em>“我用 dump 保留现场，用对应构建的 PDB 还原函数和源码位置，再结合异常线程及日志查生命周期和并发问题。Release 也生成符号，但优化和现场损坏会限制可见信息。”</em></p>
 <h2 id="网络相机图传与多相机集中管理系统"><a href="#网络相机图传与多相机集中管理系统" class="headerlink" title="网络相机图传与多相机集中管理系统"></a>网络相机图传与多相机集中管理系统</h2><h2 id="BTV"><a href="#BTV" class="headerlink" title="BTV"></a>BTV</h2>]]></content>
       <categories>
         <category>笔记</category>
