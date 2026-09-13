@@ -2686,10 +2686,7 @@
   <entry>
     <title>简历项目</title>
     <url>/2026/09/09/C++/projects/</url>
-    <content><![CDATA[<h2 id="AvatarX-智能终端平台"><a href="#AvatarX-智能终端平台" class="headerlink" title="AvatarX 智能终端平台"></a>AvatarX 智能终端平台</h2><h3 id="音视频基础"><a href="#音视频基础" class="headerlink" title="音视频基础"></a>音视频基础</h3><p><code>AVFrame</code> 是未压缩的图像或音频样本，<code>AVPacket</code> 是编码后的数据包。编码器可能缓存数据，所以一次输入不一定立即对应一个输出包。</p>
-<p>PTS 是应该展示的时间，DTS 是解码所需的时间；有帧重排时二者可能不同。time_base 是一个时间刻度的长度：<code>time_base=1/30</code> 时 PTS&#x3D;60 表示 2 秒；音频若以 1&#x2F;48000 为刻度，PTS&#x3D;96000 也表示 2 秒。必须换到同一单位再比较。</p>
-<p>GOP 是一段有参考关系的画面序列。关键帧提供恢复解码的重要入口，常见 P 帧会依赖参考帧。IDR 还承担刷新参考关系的作用，不能把所有“标记为关键”的帧都不加区别地当作万能恢复点。<br><a href="https://www.cnblogs.com/samirchen/p/7071824.html">https://www.cnblogs.com/samirchen/p/7071824.html</a></p>
-<h3 id="实时美颜模块-OpenCV"><a href="#实时美颜模块-OpenCV" class="headerlink" title="实时美颜模块 OpenCV"></a>实时美颜模块 OpenCV</h3><ol>
+    <content><![CDATA[<h2 id="AvatarX-智能终端平台"><a href="#AvatarX-智能终端平台" class="headerlink" title="AvatarX 智能终端平台"></a>AvatarX 智能终端平台</h2><h3 id="实时美颜模块-OpenCV"><a href="#实时美颜模块-OpenCV" class="headerlink" title="实时美颜模块 OpenCV"></a>实时美颜模块 OpenCV</h3><ol>
 <li><strong>双边滤波</strong> 距离近 + 颜色相近的像素权重大；距离远或颜色差异大的像素权重小。<br><strong>降采样</strong>：宽高都缩到四分之一，1920×1080 变为 480×270。<br><em>“我在小图上用双边滤波降低细小波动，再放大与原图混合。双边权重兼顾距离和颜色差，减少跨边缘模糊；降采样减少计算量，但会牺牲细节”</em></li>
 <li><strong>LUT</strong> 以空间换时间，用一个数组存储预计算结果，直接根据颜色去索引映射至目标值。<br>创建了 <code>1×256</code> 的 <code>CV_8UC1</code> 表<br><a href="https://zhuanlan.zhihu.com/p/604897964">https://zhuanlan.zhihu.com/p/604897964</a><br><a href="https://dev.epicgames.com/documentation/unreal-engine/using-lookup-tables-for-color-grading-in-unreal-engine?application_version=5.5&lang=zh-CN">https://dev.epicgames.com/documentation/unreal-engine/using-lookup-tables-for-color-grading-in-unreal-engine?application_version=5.5&amp;lang=zh-CN</a><br><a href="https://blog.csdn.net/m0_51133195/article/details/154124578">https://blog.csdn.net/m0_51133195/article/details/154124578</a><br><em>“美白曲线本来需要算对数，我把 256 个输入的结果预计算成表。参数没变就复用，每帧只做查表。”</em></li>
 <li><strong>局部形变</strong> 反向映射，离中心越远，形变越弱，到边界为零。</li>
@@ -2744,10 +2741,10 @@
 </li>
 </ol>
 <h3 id="采集模块"><a href="#采集模块" class="headerlink" title="采集模块"></a>采集模块</h3><ol>
-<li>摄像头共享与独占：有2级，前1级可共享读不调整帧源配置；后一级使用独占控制，能控制帧源配置。每次申请失败要先清理资源。<br>微软官方WinRTFrameReader标准流程:<br>①寻址（Enumerate）：在庞杂的系统设备列表中，拿到目标摄像头的“唯一身份证”（DeviceID）。<br>②配置与初始化（InitializeSettings）：向系统提交一份“需求清单”，决定接下来是用CPU还是GPU处理数据，是独占硬件还是与其他软件共享。<br>③定位数据源（FindSource）：从摄像头提供的多个功能镜头中，精准剥离出“彩色画面（Color)”的数据流。<br>④建立阅读器（CreateReader）：为选定的镜头建立一个专属的数据接收队列，并决定当程序处理不过来时该怎么办。<br>⑤订阅事件（SubscribeEvent)：挂载一个FrameArrived回调函数，告诉系统有新画面时通知程序。<br>⑥开机拉流（Start)：正式命令摄像头开始录像。<br>⑦拆解快递（FrameArrivedCallback)：获取最新帧，进行格式转换，并提取为++能读写的裸内存。<br>⑧关机清理（Cleanup）：停止数据流，释放摄像头设备，销毁阅读器。</li>
-<li><strong>WGC 帧池</strong>，是 Windows 截取窗口或屏幕时，用来暂存、复用采集画面的缓冲区集合，负责在“系统产生画面”和“程序处理画面”之间交接数据。<strong>帧池</strong>是一组复用的帧缓冲区。<br>①确定截取哪个窗口<br>②创建两缓冲帧池<br>③注册回调，然后启动采集，“有新帧时，调用 <code>onFrameArrived</code>”<br>④系统产生新画面，触发回调，系统将采集画面放入帧池，触发 <code>FrameArrived</code> 事件，这个通知在帧池内部工作线程触发<br>⑤回调中调用 <code>TryGetNextFrame()</code>，真正取得帧<br>⑥从帧里取得纹理，再提供给渲染<br>frame → Surface → <code>ID3D11Texture2D</code> → 创建或复用 SRV<br>然后在锁内更新 <code>m_currentSRV</code>。后续通过 <code>getTexture()</code> 取得这个 SRV，作为读取画面的入口。<br>⑦用完采集帧，结束借用，允许缓冲复用。帧的有效使用结束后，缓冲可以归还给系统，装下一张画面。C++&#x2F;WinRT 包装对象在析构时释放自己持有的接口引用。<br>局部 <code>frame</code> 离开作用域 → 包装对象释放引用 → 最后一个帧引用消失 → 帧生命周期结束 → WGC 回收缓冲。</li>
+<li>摄像头共享与独占：有2级，前1级可共享读不调整帧源配置；后一级使用独占控制，能控制帧源配置。每次申请失败要先清理资源。<br>微软官方WinRTFrameReader标准流程:<br>① 寻址（Enumerate）：在庞杂的系统设备列表中，拿到目标摄像头的“唯一身份证”（DeviceID）。<br>② 配置与初始化（InitializeSettings）：向系统提交一份“需求清单”，决定接下来是用CPU还是GPU处理数据，是独占硬件还是与其他软件共享。<br>③ 定位数据源（FindSource）：从摄像头提供的多个功能镜头中，精准剥离出“彩色画面（Color)”的数据流。<br>④ 建立阅读器（CreateReader）：为选定的镜头建立一个专属的数据接收队列，并决定当程序处理不过来时该怎么办。<br>⑤ 订阅事件（SubscribeEvent)：挂载一个FrameArrived回调函数，告诉系统有新画面时通知程序。<br>⑥ 开机拉流（Start)：正式命令摄像头开始录像。<br>⑦ 拆解快递（FrameArrivedCallback)：获取最新帧，进行格式转换，并提取为++能读写的裸内存。<br>⑧ 关机清理（Cleanup）：停止数据流，释放摄像头设备，销毁阅读器。</li>
+<li><strong>WGC 帧池</strong>，是 Windows 截取窗口或屏幕时，用来暂存、复用采集画面的缓冲区集合，负责在“系统产生画面”和“程序处理画面”之间交接数据。<strong>帧池</strong>是一组复用的帧缓冲区。<br>① 确定截取哪个窗口<br>② 创建两缓冲帧池<br>③ 注册回调，然后启动采集，“有新帧时，调用 <code>onFrameArrived</code>”<br>④ 系统产生新画面，触发回调，系统将采集画面放入帧池，触发 <code>FrameArrived</code> 事件，这个通知在帧池内部工作线程触发<br>⑤ 回调中调用 <code>TryGetNextFrame()</code>，真正取得帧<br>⑥ 从帧里取得纹理，再提供给渲染<br>frame → Surface → <code>ID3D11Texture2D</code> → 创建或复用 SRV<br>然后在锁内更新 <code>m_currentSRV</code>。后续通过 <code>getTexture()</code> 取得这个 SRV，作为读取画面的入口。<br>⑦ 用完采集帧，结束借用，允许缓冲复用。帧的有效使用结束后，缓冲可以归还给系统，装下一张画面。C++&#x2F;WinRT 包装对象在析构时释放自己持有的接口引用。<br>局部 <code>frame</code> 离开作用域 → 包装对象释放引用 → 最后一个帧引用消失 → 帧生命周期结束 → WGC 回收缓冲。</li>
 <li>屏幕采集窗口最小化边界：是指在创建帧池前判断 <code>size.Width&lt;=0 || size.Height&lt;=0</code> 失败时返回，避免用非法尺寸创建资源，是启动阶段的防御。</li>
-<li>WASAPI：音频捕获客户端（CaptureClient）<br>① 环境准备（COM Initialization)：初始化底层组件环境。<br>②发现设备（DeviceEnumeration)：查找系统中的麦克风或扬声器。<br>③ 激活音频客户端（ActivatelAudioClient)）：与指定的硬件设备建立连接。<br>④ 协商格式与初始化（Negotiate&amp;Initialize）：获取设备的音频格式（采样率、位深），并告诉系统我们要怎么用它（独占还是共享？要不要录系统声音？）。<br>⑤ 获取捕获服务（Get lAudioCaptureClient)：拿到真正用来“抽水”的数据读取工具。<br>⑥ 启动数据流（Start)）：命令声卡开始录音。<br>⑦ 捕获大循环（TheCaptureLoop）：在一个死循环中，不断检查有没有新数据。如果有，拿出来转换格式；拿完必须把缓冲区还给系统。<br>⑧停止与清理（Stop&amp;Cleanup）：停止流，释放所有资源。</li>
+<li>WASAPI：音频捕获客户端（CaptureClient）<br>① 环境准备（COM Initialization)：初始化底层组件环境。<br>② 发现设备（DeviceEnumeration)：查找系统中的麦克风或扬声器。<br>③ 激活音频客户端（ActivatelAudioClient)）：与指定的硬件设备建立连接。<br>④ 协商格式与初始化（Negotiate&amp;Initialize）：获取设备的音频格式（采样率、位深），并告诉系统我们要怎么用它（独占还是共享？要不要录系统声音？）。<br>⑤ 获取捕获服务（Get lAudioCaptureClient)：拿到真正用来“抽水”的数据读取工具。<br>⑥ 启动数据流（Start)）：命令声卡开始录音。<br>⑦ 捕获大循环（TheCaptureLoop）：在一个死循环中，不断检查有没有新数据。如果有，拿出来转换格式；拿完必须把缓冲区还给系统。<br>⑧ 停止与清理（Stop&amp;Cleanup）：停止流，释放所有资源。</li>
 <li>音频统一浮点32位格式便于乘音量、混合和重采样。</li>
 <li>静音包实现按原包长填 0，保持时长连续，不删除以防止和视频错位。</li>
 </ol>
@@ -2845,7 +2842,24 @@
 </ol>
 <h3 id="端云内容模块"><a href="#端云内容模块" class="headerlink" title="端云内容模块"></a>端云内容模块</h3><ol>
 <li>处理场景&#x2F;素材云端同步：客户端把对象序列化为 JSON 发送给云端，或把云端 JSON 还原成本地对象实现设置同步。<br><em>项目使用 Qt 的 JSON API 做场景数据转换。保存时，手动把场景和元素的属性写入 QJsonObject，把多个元素组织成 QJsonArray，再通过 QJsonDocument 转成 JSON 文本，包装成 HTTP 请求发送。加载时先解析云端 JSON，再读取素材 ID、类型和布局属性，获取或创建素材源，重新创建 SceneItem 并恢复位置、尺寸和层级。JSON 序列化负责数据表达，上传、下载和应用到本地对象这些流程合起来才是这里的同步。</em></li>
-<li>验证码&#x2F;密码&#x2F;企微扫码三种登录鉴权：</li>
+<li>验证码&#x2F;密码&#x2F;企微扫码三种登录鉴权：<br><em>密码登录提交账号密码、类型标识符和客户端参数，组成 JSON，发送 <code>POST</code> 到 <code>/auth/login</code>；企微扫码通过 WebEngine 加载二维码页面，拦截并捕获携带 Code 的重定向链接，再提取 Code 提交给业务后端换取本系统 Token。验证码部分实现了接口封装，具体短信服务商不是我接入的。登录成功后统一保存 Token，由 HttpManager（定义了 RESTful动作 get&#x2F;post&#x2F;put&#x2F;del）在后续请求中附加 Authorization 请求头，获取用户资料和权限，供后续使用。</em></li>
+<li><strong>Bearer Token</strong>：是一种加密字符串，它代表的是用户的身份或权限。服务端通过验证这个 Token，确认请求的发起者具备访问某些资源的权限。<br>① 替代传统明文认证，提升安全性：是服务器生成的 “临时凭证”：令牌本身不包含用户敏感信息（如密码），即使泄露，攻击者也无法反向推导出用户账号密码；令牌可设置短期有效期，降低泄露后的风险范围。<br>② 简化后续请求的鉴权流程，提升效率：用户只需在首次登录时提交真实凭证（如账号密码），后续向服务器发起请求时，无需重复提交敏感信息，只需在 HTTP 请求头中携带 Bearer Token 即可，流程极大简化。<br>③ 灵活控制权限范围（配合令牌内容设计）：服务器可在生成令牌时，将用户的权限信息（如 “只能访问订单列表，不能修改订单”）、用户 ID 等数据加密存储在令牌中（如 JWT 格式的 Bearer Token），后续验证令牌时可直接解析出权限，实现 “精细化权限控制”。</li>
+<li>创建者与 authList 权限模型：<code>SceneAuthEntry</code> 中有 userId、query、add、edit、del；云端字段对应 queryAuth、addAuth、editAuth、deleteAuth。它类似“每个场景一张授权名单”。<br>① 编辑&#x2F;删除先检查对应全局权限，可直接放行。<br>② 当前用户是创建者，或者创建者为 0，直接放行。<br>③ 遍历 authList，找到用户，按本次操作检查对应值是否为 1。<br>④ 没匹配则拒绝。<br>例：张三创建场景，李四只有 query&#x3D;1、edit&#x3D;0，可以查看但不能通过这项对象授权编辑。不过李四若拥有全局编辑权限，会在第一步被放行，因此不能只看 authList。</li>
+<li>共享布局与个人偏好两级内容合并：平台提供默认布局配置序列化成 JSON 保存到云端，提供给多个用户使用的同一套场景设置，并存储个人偏好设置，将各个元素的位置、尺寸等信息从共享配置读取，而设备、组件的选择保留个人偏好。</li>
+<li>素材下载热替换：异步下载和替换，使用 <code>emit</code> 通知管理器替换源文件<div class="admonition example"><p class="admonition-title"><span class="mdi mdi-file-code-outline admonition-icon"></span>Example</p></div>
+
+   张老师打开管理员配置的教学场景：<ol>
+<li>下载共享场景配置和张老师的个人偏好。</li>
+<li>根据元素 UUID 合并：位置、大小用管理员的；摄像头使用张老师选择的 USB 摄像头。</li>
+<li>场景里的课件图片需要从云端下载。</li>
+<li>图片下载完成后，找到对应的图片元素，替换它关联的内容源。</li>
+<li>课件显示在管理员安排的位置，不必重建整个场景。</li>
+</ol>
+</li>
+</ol>
+<h3 id="云-AI"><a href="#云-AI" class="headerlink" title="云 AI"></a>云 AI</h3><ol>
+<li>旁路采样：</li>
+<li></li>
 </ol>
 <h2 id="网络相机图传与多相机集中管理系统"><a href="#网络相机图传与多相机集中管理系统" class="headerlink" title="网络相机图传与多相机集中管理系统"></a>网络相机图传与多相机集中管理系统</h2><h2 id="BTV"><a href="#BTV" class="headerlink" title="BTV"></a>BTV</h2>]]></content>
       <categories>
@@ -2853,6 +2867,53 @@
       </categories>
       <tags>
         <tag>C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>I/O 多路复用基础</title>
+    <url>/2026/09/13/C++/IO%20%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>I/O 多路复用</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>QT 基础</title>
+    <url>/2026/09/13/C++/QT/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>QT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>图形学技术栈基础</title>
+    <url>/2026/09/13/%E7%AC%94%E8%AE%B0/%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%9F%BA%E7%A1%80/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>图形学</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>音视频技术栈基础</title>
+    <url>/2026/09/12/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%9F%BA%E7%A1%80/</url>
+    <content><![CDATA[<p><code>AVFrame</code> 是未压缩的图像或音频样本，<code>AVPacket</code> 是编码后的数据包。</p>
+<p>PTS 是应该展示的时间，DTS 是解码所需的时间；有帧重排时二者可能不同。time_base 是一个时间刻度的长度：<code>time_base=1/30</code> 时 PTS&#x3D;60 表示 2 秒；音频若以 1&#x2F;48000 为刻度，PTS&#x3D;96000 也表示 2 秒。必须换到同一单位再比较。</p>
+<p>GOP 是一段有参考关系的画面序列。关键帧提供恢复解码的重要入口，常见 P 帧会依赖参考帧。IDR 还承担刷新参考关系的作用，不能把所有“标记为关键”的帧都不加区别地当作万能恢复点。<br><a href="https://blog.csdn.net/wkd_007/article/details/134966687">https://blog.csdn.net/wkd_007/article/details/134966687</a><br><a href="https://www.cnblogs.com/samirchen/p/7071824.html">https://www.cnblogs.com/samirchen/p/7071824.html</a></p>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>音视频</tag>
       </tags>
   </entry>
 </search>
