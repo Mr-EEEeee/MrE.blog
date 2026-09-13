@@ -2849,12 +2849,10 @@
 <li>素材下载热替换：异步下载和替换，使用 <code>emit</code> 通知管理器替换源文件<div class="admonition example admonition-collapsible-wrapper">
      <details class="admonition-collapsible collapsible-closed" >
        <summary class="admonition-title">
-         <span class="mdi mdi-file-code-outline admonition-icon"></span><span class="admonition-title-text">Example</span><span class="mdi mdi-chevron-down admonition-chevron"></span>
-       </summary>
-     </details>
-   </div>
+         <span class="mdi mdi-file-code-outline admonition-icon"></span><span class="admonition-title-text">张老师打开管理员配置的教学场景</span><span class="mdi mdi-chevron-down admonition-chevron"></span>
+       </summary><div class="admonition-content">
 
-   张老师打开管理员配置的教学场景：<ol>
+<ol>
 <li>下载共享场景配置和张老师的个人偏好。</li>
 <li>根据元素 UUID 合并：位置、大小用管理员的；摄像头使用张老师选择的 USB 摄像头。</li>
 <li>场景里的课件图片需要从云端下载。</li>
@@ -2863,7 +2861,11 @@
 </ol>
 </li>
 </ol>
-<h3 id="云端-AI"><a href="#云端-AI" class="headerlink" title="云端 AI"></a>云端 AI</h3><ol>
+</div>
+        </details>
+      </div>
+
+<h3 id="端云-AI"><a href="#端云-AI" class="headerlink" title="端云 AI"></a>端云 AI</h3><ol>
 <li>旁路采样：</li>
 <li></li>
 </ol>
