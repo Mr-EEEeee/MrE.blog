@@ -2842,8 +2842,8 @@
 </ol>
 <h3 id="端云内容模块"><a href="#端云内容模块" class="headerlink" title="端云内容模块"></a>端云内容模块</h3><ol>
 <li>处理场景&#x2F;素材云端同步：客户端把对象序列化为 JSON 发送给云端，或把云端 JSON 还原成本地对象实现设置同步。<br><em>项目使用 Qt 的 JSON API 做场景数据转换。保存时，手动把场景和元素的属性写入 QJsonObject，把多个元素组织成 QJsonArray，再通过 QJsonDocument 转成 JSON 文本，包装成 HTTP 请求发送。加载时先解析云端 JSON，再读取素材 ID、类型和布局属性，获取或创建素材源，重新创建 SceneItem 并恢复位置、尺寸和层级。JSON 序列化负责数据表达，上传、下载和应用到本地对象这些流程合起来才是这里的同步。</em></li>
-<li>验证码&#x2F;密码&#x2F;企微扫码三种登录鉴权：<br><em>密码登录提交账号密码、类型标识符和客户端参数，组成 JSON，发送 <code>POST</code> 到 <code>/auth/login</code>；企微扫码通过 WebEngine 加载二维码页面，拦截并捕获携带 Code 的重定向链接，再提取 Code 提交给业务后端换取本系统 Token。验证码部分实现了接口封装，具体短信服务商不是我接入的。登录成功后统一保存 Token，由 HttpManager（定义了 RESTful动作 get&#x2F;post&#x2F;put&#x2F;del）在后续请求中附加 Authorization 请求头，获取用户资料和权限，供后续使用。</em></li>
-<li><strong>Bearer Token</strong>：是一种加密字符串，它代表的是用户的身份或权限。服务端通过验证这个 Token，确认请求的发起者具备访问某些资源的权限。<br>① 替代传统明文认证，提升安全性：是服务器生成的 “临时凭证”：令牌本身不包含用户敏感信息（如密码），即使泄露，攻击者也无法反向推导出用户账号密码；令牌可设置短期有效期，降低泄露后的风险范围。<br>② 简化后续请求的鉴权流程，提升效率：用户只需在首次登录时提交真实凭证（如账号密码），后续向服务器发起请求时，无需重复提交敏感信息，只需在 HTTP 请求头中携带 Bearer Token 即可，流程极大简化。<br>③ 灵活控制权限范围（配合令牌内容设计）：服务器可在生成令牌时，将用户的权限信息（如 “只能访问订单列表，不能修改订单”）、用户 ID 等数据加密存储在令牌中（如 JWT 格式的 Bearer Token），后续验证令牌时可直接解析出权限，实现 “精细化权限控制”。</li>
+<li>验证码&#x2F;密码&#x2F;企微扫码三种登录鉴权：<br><em>密码登录提交账号密码、租户 ID 和客户端标识等，组成 JSON，发送 <code>POST</code> 到 <code>/auth/login</code>；企微扫码通过 WebEngine 加载二维码页面，拦截并捕获携带 Code 的重定向链接，再提取 Code 提交给业务后端换取本系统 Token。验证码部分实现了接口封装，具体短信服务商不是我接入的。登录成功后统一保存 Token，由 HttpManager（定义了 RESTful动作 get&#x2F;post&#x2F;put&#x2F;del）在后续请求中附加 Authorization 请求头，获取用户资料和权限，供后续使用。</em><br>序列化：网络层将 C++ 的 <code>QJsonObject</code> 对象序列化为紧凑的 JSON 字符串（<code>QJsonDocument:Compact</code>）。</li>
+<li><strong>Bearer Token</strong>：是一种加密字符串，它代表的是用户的身份或权限。服务端通过验证这个 Token，确认请求的发起者具备访问某些资源的权限。<code>QString finalToken=token.startsWith(&quot;Bearer&quot;)？token：(&quot;Bearer&quot;+token)</code>;强制为 Token 加上了 Bearer 前缀。<br>① 替代传统明文认证，提升安全性：是服务器生成的 “临时凭证”：令牌本身不包含用户敏感信息（如密码），即使泄露，攻击者也无法反向推导出用户账号密码；令牌可设置短期有效期，降低泄露后的风险范围。<br>② 简化后续请求的鉴权流程，提升效率：用户只需在首次登录时提交真实凭证（如账号密码），后续向服务器发起请求时，无需重复提交敏感信息，只需在 HTTP 请求头中携带 Bearer Token 即可，流程极大简化。<br>③ 灵活控制权限范围（配合令牌内容设计）：服务器可在生成令牌时，将用户的权限信息（如 “只能访问订单列表，不能修改订单”）、用户 ID 等数据加密存储在令牌中（如 JWT 格式的 Bearer Token），后续验证令牌时可直接解析出权限，实现 “精细化权限控制”。</li>
 <li>创建者与 authList 权限模型：<code>SceneAuthEntry</code> 中有 userId、query、add、edit、del；云端字段对应 queryAuth、addAuth、editAuth、deleteAuth。它类似“每个场景一张授权名单”。<br>① 编辑&#x2F;删除先检查对应全局权限，可直接放行。<br>② 当前用户是创建者，或者创建者为 0，直接放行。<br>③ 遍历 authList，找到用户，按本次操作检查对应值是否为 1。<br>④ 没匹配则拒绝。<br>例：张三创建场景，李四只有 query&#x3D;1、edit&#x3D;0，可以查看但不能通过这项对象授权编辑。不过李四若拥有全局编辑权限，会在第一步被放行，因此不能只看 authList。</li>
 <li>共享布局与个人偏好两级内容合并：平台提供默认布局配置序列化成 JSON 保存到云端，提供给多个用户使用的同一套场景设置，并存储个人偏好设置，将各个元素的位置、尺寸等信息从共享配置读取，而设备、组件的选择保留个人偏好。</li>
 <li>素材下载热替换：异步下载和替换，使用 <code>emit</code> 通知管理器替换源文件<div class="admonition example admonition-collapsible-wrapper">
@@ -2866,9 +2866,27 @@
       </div>
 
 <h3 id="端云-AI"><a href="#端云-AI" class="headerlink" title="端云 AI"></a>端云 AI</h3><ol>
-<li>旁路采样：</li>
-<li></li>
+<li>旁路采样：当系统从摄像头或麦克风采集到原始数据时，数据流被一分为二：<br>① 主路(Main Pipeline):传给<code>m_recordcontroller</code>进行高强度编码（如H.264&#x2F;AAC），并推流给观众。<br>② 旁路(AI Bypass):传给<code>_aiBridge</code>，进行低分辨率降采样和切片，供Al审核使用。<br>分一路根据 PTS 每秒采样 2 帧（2FPS），对音频分片（每2秒一个 PCM 切片），通过 HTTP 上传字节流<code>QByteArray</code>。</li>
+<li>视频缩放与音频重采样：使用 <code>sws_scale</code> 把 NV12 转为 YUV420P，硬编码输出为 480×480；主采集是 48 kHz 双声道 Float32，云端需要 16 kHz 单声道 S16。同时改变采样率、声道数和数值格式，转换结果写入 FIFO。</li>
+<li>按时间切片上传：FIFO 累计够 32000 个样本，取出 64000 字节作为一片 2 秒 PCM，交给上传回调。未够一片的数据继续留在 FIFO。</li>
+<li>队列丢弃策略：视频队列在入队前若 <code>size()&gt;5</code>，或音频入队前若 <code>size()&gt;100</code>，丢最旧任务。丢旧视频使分析更接近当前状态；音频更重连续性，所以阈值更大。保证实时性&gt;完整性。</li>
+<li>端云状态轮询与自动停播逻辑： 默认 1000 ms 轮询云端状态，下播或 roomId 失效时自动停播。</li>
 </ol>
+<h3 id="处理崩溃报告与调用栈还原"><a href="#处理崩溃报告与调用栈还原" class="headerlink" title="处理崩溃报告与调用栈还原"></a>处理崩溃报告与调用栈还原</h3><ol>
+<li>dump 和调用栈分别是什么：<br>调用栈记录函数调用关系：例如用户开相机 → 初始化设备 → 创建 reader → 出错。机器运行时主要留下地址，符号文件把地址对应到函数名、源码文件和行号。</li>
+</ol>
+<p>dump 是出错时线程、寄存器和部分内存等现场数据；PDB 是某次构建的符号映射。<strong>dump 保存现场，PDB 帮助解释现场</strong>。 不是拿到任何同名 PDB 都能还原，必须匹配实际 EXE&#x2F;DLL 的构建。</p>
+<ol start="2">
+<li>仓库实际做了哪些步骤<br>注册未处理 SEH、CRT 无效参数、纯虚函数、<code>std::terminate</code> 和信号等入口；出错后建立 CrashDumps 目录，调用 <code>MiniDumpWriteDump</code> 写 dump，再输出文本栈。</li>
+</ol>
+<p>文本栈使用 <code>SymInitialize</code> 加载符号，<code>StackWalk64</code> 沿栈遍历，<code>SymFromAddr</code> 查函数名，<code>SymGetLineFromAddr64</code> 查行号。<code>g_IsInCrashHandler</code> 用于避免处理器递归进入，最后终止进程。</p>
+<p>“访问冲突”常指读写无效地址；“纯虚调用”可能与对象生命周期异常有关。但异常名只告诉你症状，不能直接断定根因。最顶层可能只是崩溃处理函数，真正错误还要看异常上下文和之前调用。</p>
+<ol start="3">
+<li>Release 为什么还要保留符号<br>CourseStudio.pro 在 Release 中增加 <code>/Zi</code> 与 <code>/DEBUG</code>，便于保留调试符号。Release 仍可以优化；有符号不等于变量都完整保留，优化会造成内联或变量不可见。</li>
+</ol>
+<p>一个能讲清的排查过程：先确认版本与匹配符号，再打开 dump，找异常线程、异常地址和调用链，检查对象生命周期、参数和并发时序，结合复现步骤验证假设。不能只看到某库在栈顶就断言库有 bug。</p>
+<p>当前在崩溃进程内使用 Qt、堆分配和符号解析，严重内存损坏或死锁时报告仍可能失败；手动捕获上下文的 terminate&#x2F;signal 路径也未必保留最初抛错点。应讲“提升现场可诊断性”，不要承诺所有崩溃都能完整还原。</p>
+<p><strong>可复述</strong>：“我用 dump 保留现场，用对应构建的 PDB 还原函数和源码位置，再结合异常线程及日志查生命周期和并发问题。Release 也生成符号，但优化和现场损坏会限制可见信息。”</p>
 <h2 id="网络相机图传与多相机集中管理系统"><a href="#网络相机图传与多相机集中管理系统" class="headerlink" title="网络相机图传与多相机集中管理系统"></a>网络相机图传与多相机集中管理系统</h2><h2 id="BTV"><a href="#BTV" class="headerlink" title="BTV"></a>BTV</h2>]]></content>
       <categories>
         <category>笔记</category>
