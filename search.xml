@@ -2687,11 +2687,18 @@
     <title>简历项目</title>
     <url>/2026/09/09/C++/projects/</url>
     <content><![CDATA[<h2 id="AvatarX-智能终端平台"><a href="#AvatarX-智能终端平台" class="headerlink" title="AvatarX 智能终端平台"></a>AvatarX 智能终端平台</h2><h3 id="实时美颜模块-OpenCV"><a href="#实时美颜模块-OpenCV" class="headerlink" title="实时美颜模块 OpenCV"></a>实时美颜模块 OpenCV</h3><ol>
-<li><strong>双边滤波</strong> 距离近 + 颜色相近的像素权重大；距离远或颜色差异大的像素权重小。<br><strong>降采样</strong>：宽高都缩到四分之一，1920×1080 变为 480×270。<br><em>“我在小图上用双边滤波降低细小波动，再放大与原图混合。双边权重兼顾距离和颜色差，减少跨边缘模糊；降采样减少计算量，但会牺牲细节”</em></li>
-<li><strong>LUT</strong> 以空间换时间，用一个数组存储预计算结果，直接根据颜色去索引映射至目标值。<br>创建了 <code>1×256</code> 的 <code>CV_8UC1</code> 表<br><a href="https://zhuanlan.zhihu.com/p/604897964">https://zhuanlan.zhihu.com/p/604897964</a><br><a href="https://dev.epicgames.com/documentation/unreal-engine/using-lookup-tables-for-color-grading-in-unreal-engine?application_version=5.5&lang=zh-CN">https://dev.epicgames.com/documentation/unreal-engine/using-lookup-tables-for-color-grading-in-unreal-engine?application_version=5.5&amp;lang=zh-CN</a><br><a href="https://blog.csdn.net/m0_51133195/article/details/154124578">https://blog.csdn.net/m0_51133195/article/details/154124578</a><br><em>“美白曲线本来需要算对数，我把 256 个输入的结果预计算成表。参数没变就复用，每帧只做查表。”</em></li>
-<li><strong>局部形变</strong> 反向映射，离中心越远，形变越弱，到边界为零。</li>
-<li>妆容即口红，以两个嘴角的中点作为中心，嘴角距离决定椭圆尺寸；生成椭圆 mask，再高斯模糊边缘，即“羽化”。减少 G、增加 R，形成红润效果。</li>
-<li><strong>GPU 磨皮</strong> 以 RGB 通道颜色综合阈值判断肤色，命中肤色的中心像素做邻域均值再混合。（HLSL shader）</li>
+<li><p><strong>双边滤波</strong> 距离近 + 颜色相近的像素权重大；距离远或颜色差异大的像素权重小。<br><strong>降采样</strong>：宽高都缩到四分之一，1920×1080 变为 480×270。</p>
+<p><em>“我在小图上用双边滤波降低细小波动，再放大与原图混合。双边权重兼顾距离和颜色差，减少跨边缘模糊；降采样减少计算量，但会牺牲细节”</em></p>
+</li>
+<li><p><strong>LUT</strong> 以空间换时间，用一个数组存储预计算结果，直接根据颜色去索引映射至目标值。<br>创建了 <code>1×256</code> 的 <code>CV_8UC1</code> 表<br><a href="https://zhuanlan.zhihu.com/p/604897964">https://zhuanlan.zhihu.com/p/604897964</a><br><a href="https://dev.epicgames.com/documentation/unreal-engine/using-lookup-tables-for-color-grading-in-unreal-engine?application_version=5.5&lang=zh-CN">https://dev.epicgames.com/documentation/unreal-engine/using-lookup-tables-for-color-grading-in-unreal-engine?application_version=5.5&amp;lang=zh-CN</a><br><a href="https://blog.csdn.net/m0_51133195/article/details/154124578">https://blog.csdn.net/m0_51133195/article/details/154124578</a></p>
+<p><em>“美白曲线本来需要算对数，我把 256 个输入的结果预计算成表。参数没变就复用，每帧只做查表。”</em></p>
+</li>
+<li><p><strong>局部形变</strong> 反向映射，离中心越远，形变越弱，到边界为零。</p>
+</li>
+<li><p>妆容即口红，以两个嘴角的中点作为中心，嘴角距离决定椭圆尺寸；生成椭圆 mask，再高斯模糊边缘，即“羽化”。减少 G、增加 R，形成红润效果。</p>
+</li>
+<li><p><strong>GPU 磨皮</strong> 以 RGB 通道颜色综合阈值判断肤色，命中肤色的中心像素做邻域均值再混合。（HLSL shader）</p>
+</li>
 </ol>
 <h3 id="面部驱动"><a href="#面部驱动" class="headerlink" title="面部驱动"></a>面部驱动</h3><ul>
 <li><strong>YuNet</strong> 是人脸检测模型</li>
@@ -2709,12 +2716,20 @@
 <li>眼距 <code>sqrt(dx²+dy²)</code>，目标贴纸宽度为眼距的 2.5 倍。</li>
 </ol>
 <h3 id="渲染管线模块"><a href="#渲染管线模块" class="headerlink" title="渲染管线模块"></a>渲染管线模块</h3><ol>
-<li><strong>YUV</strong> 中 Y 表示亮度，U&#x2F;V 表示色度。人眼对亮度细节更敏感，因此可以保留更多亮度信息、减少色度采样。4:2:0 表示图像中每个 2×2 像素区域有 4 个 Y，配一组 U&#x2F;V。<br><strong>NV12</strong> 把所有 Y 放在一个平面，再把 U&#x2F;V 交错放在第二个平面。YUV420P 则是 Y、U、V 三个独立平面。两者都是 4:2:0，但字节排列不同。<br><a href="https://zhuanlan.zhihu.com/p/1888633916459569669">https://zhuanlan.zhihu.com/p/1888633916459569669</a><br><a href="https://blog.csdn.net/byhook/article/details/84037338">https://blog.csdn.net/byhook/article/details/84037338</a></li>
-<li>色彩矩阵：把 RGB 换成 Y、U、V。8 位 Limited Range 的 Y 映射到 16～235，色度映射到 16～240。</li>
-<li>色彩分级：整体调色滤镜，3维 LUT，用 512×512 图片保存一个 64×64×64 的颜色立方体：64 个蓝色切片按 8×8 平铺，每个切片内部是红绿坐标。</li>
-<li>读写同一张纹理冲突黑屏问题：A 已经绑定为输出 → 又尝试把 A 绑定为 shader 输入时，D3D11 会检测到冲突，<strong>将冲突的输入槽置为 <code>NULL</code>，而不是按要求绑定 A</strong>。<br><em>“同一资源不应同时作为 shader 输入与渲染输出。绑定冲突时 D3D11 可能将输入槽置空，随后采样得不到预期画面。需要清理绑定，并加互斥锁，让多级滤镜交替读写两张纹理，避免输入输出冲突。”</em><br>项目的 <code>convertRGBtoNV12</code> 在绑定输入前，先做这件事：<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 清空当前渲染目标：A 不再被当作输出画布。</span></span><br><span class="line">ID3D11RenderTargetView* nullRTV[] = &#123; <span class="literal">nullptr</span> &#125;;</span><br><span class="line">m_context-&gt;<span class="built_in">OMSetRenderTargets</span>(<span class="number">1</span>, nullRTV, <span class="literal">nullptr</span>);</span><br></pre></td></tr></table></figure>
-这里的“清空”是清空输出槽的绑定，不是擦掉纹理 A 的画面，也不是释放纹理。<br>随后才把 A 接到输入槽，并选择另一个输出目标：<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 现在可以把已经画好的 A 作为输入读取。</span></span><br><span class="line">m_context-&gt;<span class="built_in">PSSetShaderResources</span>(<span class="number">0</span>, <span class="number">1</span>, &amp;inputTex);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将计算出的亮度写到 NV12 的 Y 平面，而不是写回 A。</span></span><br><span class="line">m_context-&gt;<span class="built_in">OMSetRenderTargets</span>(<span class="number">1</span>, &amp;targetY, <span class="literal">nullptr</span>);</span><br></pre></td></tr></table></figure>
-使用<strong>Ping-Pong 双缓冲</strong>，使每一步都有独立的输入和输出<br>如果连续做磨皮、美白、锐化，每一步都需要“读上一轮结果、写新结果”。<br>准备 A、B 两张纹理交替使用：<table>
+<li><p><strong>YUV</strong> 中 Y 表示亮度，U&#x2F;V 表示色度。人眼对亮度细节更敏感，因此可以保留更多亮度信息、减少色度采样。4:2:0 表示图像中每个 2×2 像素区域有 4 个 Y，配一组 U&#x2F;V。<br><strong>NV12</strong> 把所有 Y 放在一个平面，再把 U&#x2F;V 交错放在第二个平面。YUV420P 则是 Y、U、V 三个独立平面。两者都是 4:2:0，但字节排列不同。<br><a href="https://zhuanlan.zhihu.com/p/1888633916459569669">https://zhuanlan.zhihu.com/p/1888633916459569669</a><br><a href="https://blog.csdn.net/byhook/article/details/84037338">https://blog.csdn.net/byhook/article/details/84037338</a></p>
+</li>
+<li><p>色彩矩阵：把 RGB 换成 Y、U、V。8 位 Limited Range 的 Y 映射到 16～235，色度映射到 16～240。</p>
+</li>
+<li><p>色彩分级：整体调色滤镜，3维 LUT，用 512×512 图片保存一个 64×64×64 的颜色立方体：64 个蓝色切片按 8×8 平铺，每个切片内部是红绿坐标。</p>
+</li>
+<li><p>读写同一张纹理冲突黑屏问题：A 已经绑定为输出 → 又尝试把 A 绑定为 shader 输入时，D3D11 会检测到冲突，<strong>将冲突的输入槽置为 <code>NULL</code>，而不是按要求绑定 A</strong>。</p>
+<p><em>“同一资源不应同时作为 shader 输入与渲染输出。绑定冲突时 D3D11 可能将输入槽置空，随后采样得不到预期画面。需要清理绑定，并加互斥锁，让多级滤镜交替读写两张纹理，避免输入输出冲突。”</em></p>
+<p>项目的 <code>convertRGBtoNV12</code> 在绑定输入前，先做这件事：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 清空当前渲染目标：A 不再被当作输出画布。</span></span><br><span class="line">ID3D11RenderTargetView* nullRTV[] = &#123; <span class="literal">nullptr</span> &#125;;</span><br><span class="line">m_context-&gt;<span class="built_in">OMSetRenderTargets</span>(<span class="number">1</span>, nullRTV, <span class="literal">nullptr</span>);</span><br></pre></td></tr></table></figure>
+<p>这里的“清空”是清空输出槽的绑定，不是擦掉纹理 A 的画面，也不是释放纹理。<br>随后才把 A 接到输入槽，并选择另一个输出目标：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 现在可以把已经画好的 A 作为输入读取。</span></span><br><span class="line">m_context-&gt;<span class="built_in">PSSetShaderResources</span>(<span class="number">0</span>, <span class="number">1</span>, &amp;inputTex);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将计算出的亮度写到 NV12 的 Y 平面，而不是写回 A。</span></span><br><span class="line">m_context-&gt;<span class="built_in">OMSetRenderTargets</span>(<span class="number">1</span>, &amp;targetY, <span class="literal">nullptr</span>);</span><br></pre></td></tr></table></figure>
+<p>使用<strong>Ping-Pong 双缓冲</strong>，使每一步都有独立的输入和输出<br>如果连续做磨皮、美白、锐化，每一步都需要“读上一轮结果、写新结果”。<br>准备 A、B 两张纹理交替使用：</p>
+<table>
 <thead>
 <tr>
 <th>操作</th>
@@ -2741,12 +2756,19 @@
 </li>
 </ol>
 <h3 id="采集模块"><a href="#采集模块" class="headerlink" title="采集模块"></a>采集模块</h3><ol>
-<li>摄像头共享与独占：有2级，前1级可共享读不调整帧源配置；后一级使用独占控制，能控制帧源配置。每次申请失败要先清理资源。<br>微软官方WinRTFrameReader标准流程:<br>① 寻址（Enumerate）：在庞杂的系统设备列表中，拿到目标摄像头的“唯一身份证”（DeviceID）。<br>② 配置与初始化（InitializeSettings）：向系统提交一份“需求清单”，决定接下来是用CPU还是GPU处理数据，是独占硬件还是与其他软件共享。<br>③ 定位数据源（FindSource）：从摄像头提供的多个功能镜头中，精准剥离出“彩色画面（Color)”的数据流。<br>④ 建立阅读器（CreateReader）：为选定的镜头建立一个专属的数据接收队列，并决定当程序处理不过来时该怎么办。<br>⑤ 订阅事件（SubscribeEvent)：挂载一个FrameArrived回调函数，告诉系统有新画面时通知程序。<br>⑥ 开机拉流（Start)：正式命令摄像头开始录像。<br>⑦ 拆解快递（FrameArrivedCallback)：获取最新帧，进行格式转换，并提取为++能读写的裸内存。<br>⑧ 关机清理（Cleanup）：停止数据流，释放摄像头设备，销毁阅读器。</li>
-<li><strong>WGC 帧池</strong>，是 Windows 截取窗口或屏幕时，用来暂存、复用采集画面的缓冲区集合，负责在“系统产生画面”和“程序处理画面”之间交接数据。<strong>帧池</strong>是一组复用的帧缓冲区。<br>① 确定截取哪个窗口<br>② 创建两缓冲帧池<br>③ 注册回调，然后启动采集，“有新帧时，调用 <code>onFrameArrived</code>”<br>④ 系统产生新画面，触发回调，系统将采集画面放入帧池，触发 <code>FrameArrived</code> 事件，这个通知在帧池内部工作线程触发<br>⑤ 回调中调用 <code>TryGetNextFrame()</code>，真正取得帧<br>⑥ 从帧里取得纹理，再提供给渲染<br>frame → Surface → <code>ID3D11Texture2D</code> → 创建或复用 SRV<br>然后在锁内更新 <code>m_currentSRV</code>。后续通过 <code>getTexture()</code> 取得这个 SRV，作为读取画面的入口。<br>⑦ 用完采集帧，结束借用，允许缓冲复用。帧的有效使用结束后，缓冲可以归还给系统，装下一张画面。C++&#x2F;WinRT 包装对象在析构时释放自己持有的接口引用。<br>局部 <code>frame</code> 离开作用域 → 包装对象释放引用 → 最后一个帧引用消失 → 帧生命周期结束 → WGC 回收缓冲。</li>
-<li>屏幕采集窗口最小化边界：是指在创建帧池前判断 <code>size.Width&lt;=0 || size.Height&lt;=0</code> 失败时返回，避免用非法尺寸创建资源，是启动阶段的防御。</li>
-<li>WASAPI：音频捕获客户端（CaptureClient）<br>① 环境准备（COM Initialization)：初始化底层组件环境。<br>② 发现设备（DeviceEnumeration)：查找系统中的麦克风或扬声器。<br>③ 激活音频客户端（ActivatelAudioClient)）：与指定的硬件设备建立连接。<br>④ 协商格式与初始化（Negotiate&amp;Initialize）：获取设备的音频格式（采样率、位深），并告诉系统我们要怎么用它（独占还是共享？要不要录系统声音？）。<br>⑤ 获取捕获服务（Get lAudioCaptureClient)：拿到真正用来“抽水”的数据读取工具。<br>⑥ 启动数据流（Start)）：命令声卡开始录音。<br>⑦ 捕获大循环（TheCaptureLoop）：在一个死循环中，不断检查有没有新数据。如果有，拿出来转换格式；拿完必须把缓冲区还给系统。<br>⑧ 停止与清理（Stop&amp;Cleanup）：停止流，释放所有资源。</li>
-<li>音频统一浮点32位格式便于乘音量、混合和重采样。</li>
-<li>静音包实现按原包长填 0，保持时长连续，不删除以防止和视频错位。</li>
+<li><p>摄像头共享与独占：有2级，前1级可共享读不调整帧源配置；后一级使用独占控制，能控制帧源配置。每次申请失败要先清理资源。</p>
+<p>微软官方WinRTFrameReader标准流程:<br>① 寻址（Enumerate）：在庞杂的系统设备列表中，拿到目标摄像头的“唯一身份证”（DeviceID）。<br>② 配置与初始化（InitializeSettings）：向系统提交一份“需求清单”，决定接下来是用CPU还是GPU处理数据，是独占硬件还是与其他软件共享。<br>③ 定位数据源（FindSource）：从摄像头提供的多个功能镜头中，精准剥离出“彩色画面（Color)”的数据流。<br>④ 建立阅读器（CreateReader）：为选定的镜头建立一个专属的数据接收队列，并决定当程序处理不过来时该怎么办。<br>⑤ 订阅事件（SubscribeEvent)：挂载一个FrameArrived回调函数，告诉系统有新画面时通知程序。<br>⑥ 开机拉流（Start)：正式命令摄像头开始录像。<br>⑦ 拆解快递（FrameArrivedCallback)：获取最新帧，进行格式转换，并提取为++能读写的裸内存。<br>⑧ 关机清理（Cleanup）：停止数据流，释放摄像头设备，销毁阅读器。</p>
+</li>
+<li><p><strong>WGC 帧池</strong>，是 Windows 截取窗口或屏幕时，用来暂存、复用采集画面的缓冲区集合，负责在“系统产生画面”和“程序处理画面”之间交接数据。<strong>帧池</strong>是一组复用的帧缓冲区。<br>① 确定截取哪个窗口<br>② 创建两缓冲帧池<br>③ 注册回调，然后启动采集，“有新帧时，调用 <code>onFrameArrived</code>”<br>④ 系统产生新画面，触发回调，系统将采集画面放入帧池，触发 <code>FrameArrived</code> 事件，这个通知在帧池内部工作线程触发<br>⑤ 回调中调用 <code>TryGetNextFrame()</code>，真正取得帧<br>⑥ 从帧里取得纹理，再提供给渲染<br>frame → Surface → <code>ID3D11Texture2D</code> → 创建或复用 SRV<br>然后在锁内更新 <code>m_currentSRV</code>。后续通过 <code>getTexture()</code> 取得这个 SRV，作为读取画面的入口。<br>⑦ 用完采集帧，结束借用，允许缓冲复用。帧的有效使用结束后，缓冲可以归还给系统，装下一张画面。C++&#x2F;WinRT 包装对象在析构时释放自己持有的接口引用。<br>局部 <code>frame</code> 离开作用域 → 包装对象释放引用 → 最后一个帧引用消失 → 帧生命周期结束 → WGC 回收缓冲。</p>
+</li>
+<li><p>屏幕采集窗口最小化边界：是指在创建帧池前判断 <code>size.Width&lt;=0 || size.Height&lt;=0</code> 失败时返回，避免用非法尺寸创建资源，是启动阶段的防御。</p>
+</li>
+<li><p>WASAPI：音频捕获客户端（CaptureClient）<br>① 环境准备（COM Initialization)：初始化底层组件环境。<br>② 发现设备（DeviceEnumeration)：查找系统中的麦克风或扬声器。<br>③ 激活音频客户端（ActivatelAudioClient)）：与指定的硬件设备建立连接。<br>④ 协商格式与初始化（Negotiate&amp;Initialize）：获取设备的音频格式（采样率、位深），并告诉系统我们要怎么用它（独占还是共享？要不要录系统声音？）。<br>⑤ 获取捕获服务（Get lAudioCaptureClient)：拿到真正用来“抽水”的数据读取工具。<br>⑥ 启动数据流（Start)）：命令声卡开始录音。<br>⑦ 捕获大循环（TheCaptureLoop）：在一个死循环中，不断检查有没有新数据。如果有，拿出来转换格式；拿完必须把缓冲区还给系统。<br>⑧ 停止与清理（Stop&amp;Cleanup）：停止流，释放所有资源。</p>
+</li>
+<li><p>音频统一浮点32位格式便于乘音量、混合和重采样。</p>
+</li>
+<li><p>静音包实现按原包长填 0，保持时长连续，不删除以防止和视频错位。</p>
+</li>
 </ol>
 <h3 id="编码推流模块"><a href="#编码推流模块" class="headerlink" title="编码推流模块"></a>编码推流模块</h3><ol>
 <li><p>NVENC&#x2F;AMF&#x2F;x264 硬编软编回退：NVENC 使用 NVIDIA 视频编码硬件；AMF 是 AMD 媒体接口，这里用于硬件编码；x264 用 CPU 做 H.264 软件编码。可以都输出 H.264。</p>
@@ -2777,7 +2799,8 @@
 </tr>
 </tbody></table>
 </li>
-<li><p>低延迟策略：关闭 B 帧 <code>ctx-&gt;max_b_frames=0;</code>；缩减编码器缓冲区大小 <code>ctx-&gt;rc_buffer_size = bitrate /2;</code>，使编码器在网卡时立刻降低画质，而不是堆积帧；编码器低延迟参数优化；减小网络数据包大小和缓冲。<br>RTMP 调优：RTMP 用来把 FLV 音视频流经网络持续发送到服务器。TCP 保证有序可靠传输，但丢包后的重传等待可能带来延迟。<code>tcp_nodelay=1</code> 请求禁用 Nagle 算法合并小包的等待，让系统有包就发，不为了节省头部开销而“拼凑大包”，降低发送延迟。</p>
+<li><p>低延迟策略：关闭 B 帧 <code>ctx-&gt;max_b_frames=0;</code>；缩减编码器缓冲区大小 <code>ctx-&gt;rc_buffer_size = bitrate /2;</code>，使编码器在网卡时立刻降低画质，而不是堆积帧；编码器低延迟参数优化；减小网络数据包大小和缓冲。</p>
+<p>RTMP 调优：RTMP 用来把 FLV 音视频流经网络持续发送到服务器。TCP 保证有序可靠传输，但丢包后的重传等待可能带来延迟。<code>tcp_nodelay=1</code> 请求禁用 Nagle 算法合并小包的等待，让系统有包就发，不为了节省头部开销而“拼凑大包”，降低发送延迟。</p>
 </li>
 <li><p>拥塞降码率与丢非关键帧：</p>
 <table>
@@ -2837,16 +2860,27 @@
 </li>
 <li><p>断线重连：<em>“发送线程发现网络写包失败后，会标记对应输出不可用，暂时跳过这一路发送，并周期性尝试关闭旧 IO、重新打开原推流地址。连接成功后清除失败标记，恢复后续包的发送。重试由出队包计数触发（30个）；另外，网络连接恢复和媒体播放恢复是两回事，还要验证媒体头、编码参数、关键帧和时间戳是否正确恢复。”</em></p>
 </li>
-<li><p>音视频同步：<br>用已处理音频样本累计数作为同步参考，并用视频 PTS 计数推算视频时长。<br>计算 PTS 以实现同步。DTS 由编码器生成，在关闭 B 帧的情况下，理论上两者相同。<br><em>“把音频样本数和视频帧计数换算成秒，以音频为参考。视频落后就重复画面补时间，视频超前就跳过输入等待；阈值是一帧时长，单次最多补五帧。”</em></p>
+<li><p>音视频同步：<br>用已处理音频样本累计数作为同步参考，并用视频 PTS 计数推算视频时长。<br>计算 PTS 以实现同步。DTS 由编码器生成，在关闭 B 帧的情况下，理论上两者相同。</p>
+<p><em>“把音频样本数和视频帧计数换算成秒，以音频为参考。视频落后就重复画面补时间，视频超前就跳过输入等待；阈值是一帧时长，单次最多补五帧。”</em></p>
 <figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 音频样本数除以采样率，得到音频时间。若 diff&gt;一帧时长，音频走得更远，视频时间落后，需要重复编码当前画面，让视频计数追上；补帧数限制最多 5。若 diff&lt;-一帧时长，视频走得太快，丢掉本次输入，不增加视频计数，等音频追上。</span></span><br><span class="line"><span class="type">double</span> audioSec = (<span class="type">double</span>)m_totalAudioSamples / m_config.audio.sampleRate;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 视频计数除以帧率，得到视频时间。</span></span><br><span class="line"><span class="type">double</span> videoSec = (<span class="type">double</span>)m_videoPtsCounter / m_config.base.fps;</span><br><span class="line"><span class="type">double</span> frameDur = <span class="number">1.0</span> / m_config.base.fps;</span><br><span class="line"><span class="type">double</span> diff = audioSec - videoSec;</span><br></pre></td></tr></table></figure></li>
 </ol>
 <h3 id="端云内容模块"><a href="#端云内容模块" class="headerlink" title="端云内容模块"></a>端云内容模块</h3><ol>
-<li>处理场景&#x2F;素材云端同步：客户端把对象序列化为 JSON 发送给云端，或把云端 JSON 还原成本地对象实现设置同步。<br><em>项目使用 Qt 的 JSON API 做场景数据转换。保存时，手动把场景和元素的属性写入 QJsonObject，把多个元素组织成 QJsonArray，再通过 QJsonDocument 转成 JSON 文本，包装成 HTTP 请求发送。加载时先解析云端 JSON，再读取素材 ID、类型和布局属性，获取或创建素材源，重新创建 SceneItem 并恢复位置、尺寸和层级。JSON 序列化负责数据表达，上传、下载和应用到本地对象这些流程合起来才是这里的同步。</em></li>
-<li>验证码&#x2F;密码&#x2F;企微扫码三种登录鉴权：<br><em>密码登录提交账号密码、租户 ID 和客户端标识等，组成 JSON，发送 <code>POST</code> 到 <code>/auth/login</code>；企微扫码通过 WebEngine 加载二维码页面，拦截并捕获携带 Code 的重定向链接，再提取 Code 提交给业务后端换取本系统 Token。验证码部分实现了接口封装，具体短信服务商不是我接入的。登录成功后统一保存 Token，由 HttpManager（定义了 RESTful动作 get&#x2F;post&#x2F;put&#x2F;del）在后续请求中附加 Authorization 请求头，获取用户资料和权限，供后续使用。</em><br>序列化：网络层将 C++ 的 <code>QJsonObject</code> 对象序列化为紧凑的 JSON 字符串（<code>QJsonDocument:Compact</code>）。</li>
-<li><strong>Bearer Token</strong>：是一种加密字符串，它代表的是用户的身份或权限。服务端通过验证这个 Token，确认请求的发起者具备访问某些资源的权限。<code>QString finalToken=token.startsWith(&quot;Bearer&quot;)？token：(&quot;Bearer&quot;+token)</code>;强制为 Token 加上了 Bearer 前缀。<br>① 替代传统明文认证，提升安全性：是服务器生成的 “临时凭证”：令牌本身不包含用户敏感信息（如密码），即使泄露，攻击者也无法反向推导出用户账号密码；令牌可设置短期有效期，降低泄露后的风险范围。<br>② 简化后续请求的鉴权流程，提升效率：用户只需在首次登录时提交真实凭证（如账号密码），后续向服务器发起请求时，无需重复提交敏感信息，只需在 HTTP 请求头中携带 Bearer Token 即可，流程极大简化。<br>③ 灵活控制权限范围（配合令牌内容设计）：服务器可在生成令牌时，将用户的权限信息（如 “只能访问订单列表，不能修改订单”）、用户 ID 等数据加密存储在令牌中（如 JWT 格式的 Bearer Token），后续验证令牌时可直接解析出权限，实现 “精细化权限控制”。</li>
-<li>创建者与 authList 权限模型：<code>SceneAuthEntry</code> 中有 userId、query、add、edit、del；云端字段对应 queryAuth、addAuth、editAuth、deleteAuth。它类似“每个场景一张授权名单”。<br>① 编辑&#x2F;删除先检查对应全局权限，可直接放行。<br>② 当前用户是创建者，或者创建者为 0，直接放行。<br>③ 遍历 authList，找到用户，按本次操作检查对应值是否为 1。<br>④ 没匹配则拒绝。<br>例：张三创建场景，李四只有 query&#x3D;1、edit&#x3D;0，可以查看但不能通过这项对象授权编辑。不过李四若拥有全局编辑权限，会在第一步被放行，因此不能只看 authList。</li>
-<li>共享布局与个人偏好两级内容合并：平台提供默认布局配置序列化成 JSON 保存到云端，提供给多个用户使用的同一套场景设置，并存储个人偏好设置，将各个元素的位置、尺寸等信息从共享配置读取，而设备、组件的选择保留个人偏好。</li>
-<li>素材下载热替换：异步下载和替换，使用 <code>emit</code> 通知管理器替换源文件</li>
+<li><p>处理场景&#x2F;素材云端同步：客户端把对象序列化为 JSON 发送给云端，或把云端 JSON 还原成本地对象实现设置同步。</p>
+<p><em>“项目使用 Qt 的 JSON API 做场景数据转换。保存时，手动把场景和元素的属性写入 QJsonObject，把多个元素组织成 QJsonArray，再通过 QJsonDocument 转成 JSON 文本，包装成 HTTP 请求发送。加载时先解析云端 JSON，再读取素材 ID、类型和布局属性，获取或创建素材源，重新创建 SceneItem 并恢复位置、尺寸和层级。JSON 序列化负责数据表达，上传、下载和应用到本地对象这些流程合起来才是这里的同步。”</em></p>
+</li>
+<li><p>验证码&#x2F;密码&#x2F;企微扫码三种登录鉴权：<br><em>“密码登录提交账号密码、租户 ID 和客户端标识等，组成 JSON，发送 <code>POST</code> 到 <code>/auth/login</code>；企微扫码通过 WebEngine 加载二维码页面，拦截并捕获携带 Code 的重定向链接，再提取 Code 提交给业务后端换取本系统 Token。验证码部分实现了接口封装，具体短信服务商不是我接入的。登录成功后统一保存 Token，由 HttpManager（定义了 RESTful动作 get&#x2F;post&#x2F;put&#x2F;del）在后续请求中附加 Authorization 请求头，获取用户资料和权限，供后续使用。”</em></p>
+<p>序列化：网络层将 C++ 的 <code>QJsonObject</code> 对象序列化为紧凑的 JSON 字符串（<code>QJsonDocument:Compact</code>）。</p>
+</li>
+<li><p><strong>Bearer Token</strong>：是一种加密字符串，它代表的是用户的身份或权限。服务端通过验证这个 Token，确认请求的发起者具备访问某些资源的权限。<code>QString finalToken=token.startsWith(&quot;Bearer&quot;)？token：(&quot;Bearer&quot;+token)</code>;强制为 Token 加上了 Bearer 前缀。</p>
+<p>① 替代传统明文认证，提升安全性：是服务器生成的 “临时凭证”：令牌本身不包含用户敏感信息（如密码），即使泄露，攻击者也无法反向推导出用户账号密码；令牌可设置短期有效期，降低泄露后的风险范围。<br>② 简化后续请求的鉴权流程，提升效率：用户只需在首次登录时提交真实凭证（如账号密码），后续向服务器发起请求时，无需重复提交敏感信息，只需在 HTTP 请求头中携带 Bearer Token 即可，流程极大简化。<br>③ 灵活控制权限范围（配合令牌内容设计）：服务器可在生成令牌时，将用户的权限信息（如 “只能访问订单列表，不能修改订单”）、用户 ID 等数据加密存储在令牌中（如 JWT 格式的 Bearer Token），后续验证令牌时可直接解析出权限，实现 “精细化权限控制”。</p>
+</li>
+<li><p>创建者与 authList 权限模型：<code>SceneAuthEntry</code> 中有 userId、query、add、edit、del；云端字段对应 queryAuth、addAuth、editAuth、deleteAuth。它类似“每个场景一张授权名单”。</p>
+<p>① 编辑&#x2F;删除先检查对应全局权限，可直接放行。<br>② 当前用户是创建者，或者创建者为 0，直接放行。<br>③ 遍历 authList，找到用户，按本次操作检查对应值是否为 1。<br>④ 没匹配则拒绝。<br>例：张三创建场景，李四只有 query&#x3D;1、edit&#x3D;0，可以查看但不能通过这项对象授权编辑。不过李四若拥有全局编辑权限，会在第一步被放行，因此不能只看 authList。</p>
+</li>
+<li><p>共享布局与个人偏好两级内容合并：平台提供默认布局配置序列化成 JSON 保存到云端，提供给多个用户使用的同一套场景设置，并存储个人偏好设置，将各个元素的位置、尺寸等信息从共享配置读取，而设备、组件的选择保留个人偏好。</p>
+</li>
+<li><p>素材下载热替换：异步下载和替换，使用 <code>emit</code> 通知管理器替换源文件</p>
+</li>
 </ol>
 <div class="admonition example admonition-collapsible-wrapper">
         <details class="admonition-collapsible collapsible-closed" >
@@ -2873,9 +2907,17 @@
 <li>端云状态轮询与自动停播逻辑： 默认 1000 ms 轮询云端状态，下播或 roomId 失效时自动停播。</li>
 </ol>
 <h3 id="处理崩溃报告与调用栈还原"><a href="#处理崩溃报告与调用栈还原" class="headerlink" title="处理崩溃报告与调用栈还原"></a>处理崩溃报告与调用栈还原</h3><ol>
-<li>dump 和调用栈分别是什么：<br>调用栈记录函数调用关系：例如用户开相机 → 初始化设备 → 创建 reader → 出错。机器运行时主要留下地址，符号文件把地址对应到函数名、源码文件和行号。<br>dump 是出错时线程、寄存器和部分内存等现场数据；PDB 是某次构建的符号映射。<strong>dump 保存现场，PDB 帮助解释现场</strong>。 不是拿到任何同名 PDB 都能还原，必须匹配实际 EXE&#x2F;DLL 的构建。</li>
-<li>仓库实际做了哪些步骤<br>注册未处理 SEH、CRT 无效参数、纯虚函数、<code>std::terminate</code> 和信号等入口；出错后建立 CrashDumps 目录，调用 <code>MiniDumpWriteDump</code> 写 dump，再输出文本栈。<br>文本栈使用 <code>SymInitialize</code> 加载符号，<code>StackWalk64</code> 沿栈遍历，<code>SymFromAddr</code> 查函数名，<code>SymGetLineFromAddr64</code> 查行号。<code>g_IsInCrashHandler</code> 用于避免处理器递归进入，最后终止进程。<br>“访问冲突”常指读写无效地址；“纯虚调用”可能与对象生命周期异常有关。但异常名只告诉你症状，不能直接断定根因。最顶层可能只是崩溃处理函数，真正错误还要看异常上下文和之前调用。</li>
-<li>Release 为什么还要保留符号<br>CourseStudio.pro 在 Release 中增加 <code>/Zi</code> 与 <code>/DEBUG</code>，便于保留调试符号。Release 仍可以优化；有符号不等于变量都完整保留，优化会造成内联或变量不可见。<br>一个能讲清的排查过程：先确认版本与匹配符号，再打开 dump，找异常线程、异常地址和调用链，检查对象生命周期、参数和并发时序，结合复现步骤验证假设。不能只看到某库在栈顶就断言库有 bug。<br>当前在崩溃进程内使用 Qt、堆分配和符号解析，严重内存损坏或死锁时报告仍可能失败；手动捕获上下文的 terminate&#x2F;signal 路径也未必保留最初抛错点。应讲“提升现场可诊断性”，不要承诺所有崩溃都能完整还原。</li>
+<li><p>dump 和调用栈分别是什么：<br>调用栈记录函数调用关系：例如用户开相机 → 初始化设备 → 创建 reader → 出错。机器运行时主要留下地址，符号文件把地址对应到函数名、源码文件和行号。</p>
+<p>dump 是出错时线程、寄存器和部分内存等现场数据；PDB 是某次构建的符号映射。<strong>dump 保存现场，PDB 帮助解释现场</strong>。 不是拿到任何同名 PDB 都能还原，必须匹配实际 EXE&#x2F;DLL 的构建。</p>
+</li>
+<li><p>仓库实际做了哪些步骤<br>注册未处理 SEH、CRT 无效参数、纯虚函数、<code>std::terminate</code> 和信号等入口；出错后建立 CrashDumps 目录，调用 <code>MiniDumpWriteDump</code> 写 dump，再输出文本栈。</p>
+<p>文本栈使用 <code>SymInitialize</code> 加载符号，<code>StackWalk64</code> 沿栈遍历，<code>SymFromAddr</code> 查函数名，<code>SymGetLineFromAddr64</code> 查行号。<code>g_IsInCrashHandler</code> 用于避免处理器递归进入，最后终止进程。</p>
+<p>“访问冲突”常指读写无效地址；“纯虚调用”可能与对象生命周期异常有关。但异常名只告诉你症状，不能直接断定根因。最顶层可能只是崩溃处理函数，真正错误还要看异常上下文和之前调用。</p>
+</li>
+<li><p>Release 为什么还要保留符号<br>CourseStudio.pro 在 Release 中增加 <code>/Zi</code> 与 <code>/DEBUG</code>，便于保留调试符号。Release 仍可以优化；有符号不等于变量都完整保留，优化会造成内联或变量不可见。</p>
+<p>一个能讲清的排查过程：先确认版本与匹配符号，再打开 dump，找异常线程、异常地址和调用链，检查对象生命周期、参数和并发时序，结合复现步骤验证假设。不能只看到某库在栈顶就断言库有 bug。</p>
+<p>当前在崩溃进程内使用 Qt、堆分配和符号解析，严重内存损坏或死锁时报告仍可能失败；手动捕获上下文的 terminate&#x2F;signal 路径也未必保留最初抛错点。应讲“提升现场可诊断性”，不要承诺所有崩溃都能完整还原。</p>
+</li>
 </ol>
 <p><em>“我用 dump 保留现场，用对应构建的 PDB 还原函数和源码位置，再结合异常线程及日志查生命周期和并发问题。Release 也生成符号，但优化和现场损坏会限制可见信息。”</em></p>
 <h2 id="网络相机图传与多相机集中管理系统"><a href="#网络相机图传与多相机集中管理系统" class="headerlink" title="网络相机图传与多相机集中管理系统"></a>网络相机图传与多相机集中管理系统</h2><h2 id="BTV"><a href="#BTV" class="headerlink" title="BTV"></a>BTV</h2>]]></content>
