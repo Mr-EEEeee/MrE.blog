@@ -3268,19 +3268,20 @@
 </tr>
 <tr>
 <td><code>Qt::UniqueConnection</code></td>
-<td>确保连接唯一（若已存在相同连接，则不重复创建），需与其他类型组合（如 &#96;Qt::AutoConnection）</td>
+<td>确保连接唯一（若已存在相同连接，则不重复创建），需与其他类型组合（如 <code>Qt::AutoConnection</code>）</td>
 <td>防止重复连接调用多次槽函数</td>
 </tr>
 </tbody></table>
 <p>即使没有跨线程，<code>QueuedConnection</code> 和 <code>DirectConnection</code> 的执行时机仍然不同，前者需要入队等待，后者立即调用。</p>
 <h2 id="MOC-Meta-Object-Compiler"><a href="#MOC-Meta-Object-Compiler" class="headerlink" title="MOC (Meta-Object Compiler)"></a>MOC (Meta-Object Compiler)</h2><blockquote>
-<p>元对象编译器，实际是一个代码生成工具。<br>因为 Qt 的元对象系统需要一些额外信息，而标准 C++ 编译器本身不会因为写了 <code>Q_OBJECT</code> 就自动生成这些东西。</p>
+<p>元对象编译器，实际是一个代码生成工具。</p>
 </blockquote>
+<p>因为 Qt 的元对象系统需要一些额外信息，而标准 C++ 编译器本身不会因为写了 <code>Q_OBJECT</code> 就自动生成这些东西。</p>
 <p>在编译前，moc 会解析这些继承自 <code>QObject</code>，并包含 <code>Q_OBJECT</code> 宏类的头文件，为带有 <code>signals</code> 和 <code>slots</code> 关键字的函数以及其他元对象特性生成一个额外的 C++ 源文件。这个源文件包含了每个信号的实现体和一个静态的 <code>QMetaObject</code> 实例，该实例存储了类的元信息，比如信号和槽的字符串表。当调用 <code>connect</code> 函数将一个信号连接到一个槽时，实际上是在一个全局的哈希表中注册了这个连接，表中记录了发送者对象、信号签名、接收者对象和槽签名。最后，当你使用 <code>emit</code> 关键字发出一个信号时，<code>QObject</code> 的 <code>qt_metacall</code> 或相关函数会被调用，它会根据传入的信号索引在元对象中查找所有连接到该信号的槽，并依次调用它们。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">声明 Q_OBJECT</span><br><span class="line">   ↓</span><br><span class="line">告诉 Qt：</span><br><span class="line">“这个类需要元对象功能”</span><br><span class="line">   ↓</span><br><span class="line">moc 扫描</span><br><span class="line">   ↓</span><br><span class="line">生成 C++ 代码</span><br><span class="line">   ↓</span><br><span class="line">实现元对象系统</span><br></pre></td></tr></table></figure>
 
 <h2 id="对象树"><a href="#对象树" class="headerlink" title="对象树"></a>对象树</h2><p>Qt 的对象树是一种基于父子关系的层级结构，用于管理所有继承自 <code>QObject</code> 的对象。当创建一个 <code>QObject</code> 并为其指定一个父对象时，该对象就会被自动添加到父对象的子对象列表中。</p>
-<p>这种机制最核心的优势在于自动化内存管理，当父对象被销毁时，Qt 会自动遍历并销毁其所有的子对象。我们在开发中只需要手动管理顶层对象，拥有的所有子对象都会被清理。<br><img src="/%5Blink%5D(https:/files.seeusercontent.com/2026/09/14/wT9g/pasted-image-1789393099947.webp)"></p>
+<p>这种机制最核心的优势在于自动化内存管理，当父对象被销毁时，Qt 会自动遍历并销毁其所有的子对象。我们在开发中只需要手动管理顶层对象，拥有的所有子对象都会被清理。<br><img src="https://files.seeusercontent.com/2026/09/14/wT9g/pasted-image-1789393099947.webp"></p>
 ]]></content>
       <categories>
         <category>笔记</category>
