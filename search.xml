@@ -2943,7 +2943,129 @@
   <entry>
     <title>QT 基础</title>
     <url>/2026/09/13/C++/QT/</url>
-    <content><![CDATA[]]></content>
+    <content><![CDATA[<h3 id="MVC-对比-MVVM-架构"><a href="#MVC-对比-MVVM-架构" class="headerlink" title="MVC 对比 MVVM 架构"></a>MVC 对比 MVVM 架构</h3><p>MVC 中让 View 直接监听 Model 信号，并显示，MV 耦合；Controller 负责业务逻辑并修改 Model。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">V → C → M</span><br><span class="line">↑       │</span><br><span class="line">└───────┘</span><br></pre></td></tr></table></figure>
+
+<p>MVVM 中 ViewModel 处理 Model 数据，让 View 显示（双向绑定），</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">V ↔ VM → M</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>要解决的问题</th>
+<th>MVC 风格</th>
+<th>MVVM 风格</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>原始计数存在哪</td>
+<td>Model</td>
+<td>Model</td>
+</tr>
+<tr>
+<td>用户点击交给谁</td>
+<td>Controller</td>
+<td>ViewModel 的操作方法</td>
+</tr>
+<tr>
+<td>View 从哪里读数据</td>
+<td>直接读 Model</td>
+<td>读 ViewModel</td>
+</tr>
+<tr>
+<td>显示文字由谁组织</td>
+<td>可放在 View</td>
+<td>ViewModel</td>
+</tr>
+<tr>
+<td>按钮可用等界面状态</td>
+<td>View 判断，或由 Controller 协调</td>
+<td>通常作为 ViewModel 属性提供</td>
+</tr>
+</tbody></table>
+<p>QWidget＋MVC 通常由 Controller 处理操作，View 监听 Model 后手动更新控件。QML＋MVVM 则通过 ViewModel 提供展示属性和操作入口，借助 QML 属性绑定更新界面。<br>对状态复杂的界面，MVVM 能集中展示规则，减少控件状态同步代码，也更便于测试；对于已有的 QWidget 项目，MVC 配合清晰的信号槽同样适用。都可以分离职责，解耦前后端。</p>
+<div class="admonition example admonition-collapsible-wrapper">
+        <details class="admonition-collapsible collapsible-closed" >
+          <summary class="admonition-title">
+            <span class="mdi mdi-file-code-outline admonition-icon"></span><span class="admonition-title-text">点击按钮增加计数，达到 10 后按钮禁用</span><span class="mdi mdi-chevron-down admonition-chevron"></span>
+          </summary><div class="admonition-content">
+
+<p>1．<strong>QWidget＋MVC：Controller 处理点击，View 观察 Model</strong><br>职责划分：</p>
+<ul>
+<li><strong>Model</strong>：保存计数。</li>
+<li><strong>Controller</strong>：处理增加操作，保证不超过 10。</li>
+<li><strong>View</strong>：显示计数，更新按钮状态。</li>
+</ul>
+<p>Controller：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Controller 处理增加操作，并限制最大计数</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">CounterController::increment</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (m_model-&gt;<span class="built_in">count</span>() &lt; <span class="number">10</span>) &#123;</span><br><span class="line">        m_model-&gt;<span class="built_in">setCount</span>(m_model-&gt;<span class="built_in">count</span>() + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>View 初始化时建立连接：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 用户点击按钮，交给 Controller 处理</span></span><br><span class="line"><span class="built_in">connect</span>(button, &amp;QPushButton::clicked,</span><br><span class="line">        controller, &amp;CounterController::increment);</span><br><span class="line"></span><br><span class="line"><span class="comment">// View 直接监听 Model，并手动更新两个控件</span></span><br><span class="line"><span class="built_in">connect</span>(model, &amp;CounterModel::countChanged,</span><br><span class="line">        <span class="keyword">this</span>, [<span class="keyword">this</span>](<span class="type">int</span> count) &#123;</span><br><span class="line">    label-&gt;<span class="built_in">setText</span>(<span class="built_in">QString</span>(<span class="string">&quot;当前计数：%1&quot;</span>).<span class="built_in">arg</span>(count));</span><br><span class="line">    button-&gt;<span class="built_in">setEnabled</span>(count &lt; <span class="number">10</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化界面，不能只等下一次变化信号</span></span><br><span class="line">label-&gt;<span class="built_in">setText</span>(<span class="built_in">QString</span>(<span class="string">&quot;当前计数：%1&quot;</span>).<span class="built_in">arg</span>(model-&gt;<span class="built_in">count</span>()));</span><br><span class="line">button-&gt;<span class="built_in">setEnabled</span>(model-&gt;<span class="built_in">count</span>() &lt; <span class="number">10</span>);</span><br></pre></td></tr></table></figure>
+
+<p>整条流程是：<br><strong>点击 → Controller → Model 改变 → 发信号 → View 调用 <code>setText()</code>、<code>setEnabled()</code></strong><br>这里的文字格式化、按钮状态判断，放在 View 中。</p>
+<p>2．<strong>QML＋MVVM：ViewModel 提供状态，View 声明绑定</strong><br>ViewModel 提供适合界面使用的属性：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 以下为 ViewModel 的关键成员节选，假设已持有 Model</span></span><br><span class="line"><span class="built_in">Q_PROPERTY</span>(QString displayText READ displayText NOTIFY stateChanged)</span><br><span class="line"><span class="built_in">Q_PROPERTY</span>(<span class="type">bool</span> canIncrement READ canIncrement NOTIFY stateChanged)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将原始计数转换为显示文字</span></span><br><span class="line"><span class="function">QString <span class="title">displayText</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">QString</span>(<span class="string">&quot;当前计数：%1&quot;</span>).<span class="built_in">arg</span>(m_model-&gt;<span class="built_in">count</span>());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 提供按钮是否可用的状态</span></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">canIncrement</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> m_model-&gt;<span class="built_in">count</span>() &lt; <span class="number">10</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 暴露给 QML 的操作入口，执行时仍检查限制</span></span><br><span class="line"><span class="function">Q_INVOKABLE <span class="type">void</span> <span class="title">increment</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="built_in">canIncrement</span>()) &#123;</span><br><span class="line">        m_model-&gt;<span class="built_in">setCount</span>(m_model-&gt;<span class="built_in">count</span>() + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ViewModel 还需要把 Model 的变化转成自己的通知：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在构造阶段建立连接：Model 变化时通知 QML 重新读取展示属性</span></span><br><span class="line"><span class="built_in">connect</span>(m_model, &amp;CounterModel::countChanged,</span><br><span class="line">        <span class="keyword">this</span>, [<span class="keyword">this</span>](<span class="type">int</span>) &#123;</span><br><span class="line">    emit <span class="built_in">stateChanged</span>();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>QML View：</p>
+<figure class="highlight qml"><table><tr><td class="code"><pre><span class="line"><span class="title">Column</span> &#123;</span><br><span class="line">    <span class="title">Text</span> &#123;</span><br><span class="line">        <span class="comment">// 绑定显示属性，初始化和后续变化都由绑定处理</span></span><br><span class="line">        <span class="attribute">text</span>: vm.displayText</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title">Button</span> &#123;</span><br><span class="line">        <span class="comment">// 设置按钮文字</span></span><br><span class="line">        <span class="attribute">text</span>: <span class="string">&quot;增加&quot;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 绑定可用状态</span></span><br><span class="line">        <span class="attribute">enabled</span>: vm.canIncrement</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 点击后调用 ViewModel</span></span><br><span class="line">        <span class="attribute">onClicked</span>: vm.increment()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>整条流程是：<br><strong>点击 → ViewModel → Model 改变 → ViewModel 通知 → QML 绑定重新求值 → 界面更新。</strong><br>你不用手写 <code>label-&gt;setText()</code>，但变化通知仍然必须正确发出，QML 不会凭空知道普通 C++ 成员变量变了。</p>
+<p>3．核心区别放在一起看</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>QWidget＋MVC 示例</th>
+<th>QML＋MVVM 示例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用户操作交给谁</td>
+<td>Controller</td>
+<td>ViewModel 的操作方法</td>
+</tr>
+<tr>
+<td>View 从哪里获取数据</td>
+<td>Model</td>
+<td>ViewModel</td>
+</tr>
+<tr>
+<td>谁组织显示文字</td>
+<td>示例中由 View 组织</td>
+<td>ViewModel</td>
+</tr>
+<tr>
+<td>谁提供按钮可用状态</td>
+<td>示例中 View 根据 Model 判断</td>
+<td>ViewModel 提供属性</td>
+</tr>
+<tr>
+<td>界面如何更新</td>
+<td>槽函数调用控件 setter</td>
+<td>属性通知触发绑定更新</td>
+</tr>
+<tr>
+<td>初始化显示</td>
+<td>通常手动设置</td>
+<td>绑定首次求值</td>
+</tr>
+<tr>
+<td>展示规则如何测试</td>
+<td>写在 View 中时，需要与控件代码分离才能方便测试</td>
+<td>可以直接测试 ViewModel 属性</td>
+</tr>
+<tr>
+<td>主要额外工作</td>
+<td>管理控件更新与连接</td>
+<td>设计属性、操作及通知关系</td>
+</tr>
+</tbody></table>
+<p><strong>两种方式都会响应变化，差别不是“一个自动、一个完全不自动”</strong>。 QWidget 的槽也会自动触发；QML 进一步替你管理了“读取依赖属性，并更新界面属性”这一步。</p>
+</div>
+        </details>
+      </div>
+]]></content>
       <categories>
         <category>笔记</category>
       </categories>
