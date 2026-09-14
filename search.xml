@@ -2700,6 +2700,7 @@
 <li><p><strong>GPU 磨皮</strong> 以 RGB 通道颜色综合阈值判断肤色，命中肤色的中心像素做邻域均值再混合。（HLSL shader）</p>
 </li>
 </ol>
+<p><em>“我的优化思路分为<strong>计算</strong>和<strong>数据传输</strong>两部分，让 GPU 和 CPU 混合处理。计算方面，大眼、瘦脸等特效需要为多个位置重复进行复杂计算，可以用 SIMD 批量生成映射，再由 GPU 执行重映射。数据传输方面，利用 cuda 尽可能让特效按顺序在 GpuMat 上连续处理显存中的图像，避免每个效果在 GPU 和 CPU 间反复拷贝。对于高度依赖 CPU 复杂数学逻辑的特性（贴纸特效），只下载必要的 ROI（局部区域），用 OpenCV 函数和复杂数学计算处理后回写原 GPU 区域，规避 PCIe 带宽瓶颈。”</em></p>
 <h3 id="面部驱动"><a href="#面部驱动" class="headerlink" title="面部驱动"></a>面部驱动</h3><ul>
 <li><strong>YuNet</strong> 是人脸检测模型</li>
 <li><strong>ONNX</strong> 是存储模型计算结构和权重的格式,通过 OpenCV 的 FaceDetectorYN 加载 .onnx</li>
