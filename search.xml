@@ -2941,12 +2941,82 @@
       </tags>
   </entry>
   <entry>
-    <title>QT 基础</title>
-    <url>/2026/09/13/C++/QT/</url>
-    <content><![CDATA[<h3 id="MVC-对比-MVVM-架构"><a href="#MVC-对比-MVVM-架构" class="headerlink" title="MVC 对比 MVVM 架构"></a>MVC 对比 MVVM 架构</h3><p>MVC 中让 View 直接监听 Model 信号，并显示，MV 耦合；Controller 负责业务逻辑并修改 Model。</p>
+    <title>图形学技术栈基础</title>
+    <url>/2026/09/13/%E7%AC%94%E8%AE%B0/%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%9F%BA%E7%A1%80/</url>
+    <content><![CDATA[]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>图形学</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>音视频技术栈基础</title>
+    <url>/2026/09/12/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%9F%BA%E7%A1%80/</url>
+    <content><![CDATA[<p><code>AVFrame</code> 是未压缩的图像或音频样本，<code>AVPacket</code> 是编码后的数据包。</p>
+<p>PTS 是应该展示的时间，DTS 是解码所需的时间；有帧重排时二者可能不同。time_base 是一个时间刻度的长度：<code>time_base=1/30</code> 时 PTS&#x3D;60 表示 2 秒；音频若以 1&#x2F;48000 为刻度，PTS&#x3D;96000 也表示 2 秒。必须换到同一单位再比较。</p>
+<p>GOP 是一段有参考关系的画面序列。关键帧提供恢复解码的重要入口，常见 P 帧会依赖参考帧。IDR 还承担刷新参考关系的作用，不能把所有“标记为关键”的帧都不加区别地当作万能恢复点。<br><a href="https://blog.csdn.net/wkd_007/article/details/134966687">https://blog.csdn.net/wkd_007/article/details/134966687</a><br><a href="https://www.cnblogs.com/samirchen/p/7071824.html">https://www.cnblogs.com/samirchen/p/7071824.html</a></p>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>音视频</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Qt 控件相关</title>
+    <url>/2026/09/14/C++/QT4/</url>
+    <content><![CDATA[<h2 id="Qwidget"><a href="#Qwidget" class="headerlink" title="Qwidget"></a>Qwidget</h2><h2 id="QML"><a href="#QML" class="headerlink" title="QML"></a>QML</h2><h2 id="自定义控件"><a href="#自定义控件" class="headerlink" title="自定义控件"></a>自定义控件</h2>]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>QT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Qt 事件与消息循环</title>
+    <url>/2026/09/14/C++/QT2/</url>
+    <content><![CDATA[<h2 id="事件"><a href="#事件" class="headerlink" title="事件"></a>事件</h2><p><a href="https://subingwen.cn/qt/event_handler/">https://subingwen.cn/qt/event_handler/</a><br>Qt 框架提供了一些列的事件处理机制，当窗口事件产生之后，事件会经过：<strong>事件派发 -&gt; 事件过滤-&gt;事件分发-&gt;事件处理</strong>几个阶段。Qt 窗口中对于产生的一系列事件都有默认的处理动作，如果有特殊需求就需要在合适的阶段重写事件的处理动作。</p>
+<p>事件（event）是由系统或者 Qt 本身在不同的场景下发出的。当用户按下&#x2F;移动鼠标、敲下键盘，或者是窗口关闭&#x2F;大小发生变化&#x2F;隐藏或显示都会发出一个相应的事件。一些事件在对用户操作做出响应时发出，如鼠标&#x2F;键盘事件等；另一些事件则是由系统自动发出，如计时器事件。</p>
+<p>每一个Qt应用程序都对应一个唯一的 <code>QApplication</code> 应用程序对象，然后调用这个对象的 <code>exec()</code> 函数，它启动了<strong>主线程的事件循环</strong>，这样 Qt 框架内部的事件检测就开始了（<strong>程序将进入事件循环来监听应用程序的事件</strong>）。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">QApplication <span class="title">a</span><span class="params">(argc, argv)</span></span>;</span><br><span class="line">    MainWindow* w = <span class="keyword">new</span> MainWindow;</span><br><span class="line">    w.<span class="built_in">show</span>();</span><br><span class="line">    <span class="keyword">return</span> a.<span class="built_in">exec</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>事件在Qt中产生之后，的分发过程是这样的：</p>
+<ol>
+<li><p>当事件产生之后，Qt使用用应用程序对象调用notify()函数将事件发送到指定的窗口：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">[<span class="keyword">override</span> <span class="keyword">virtual</span>] <span class="function"><span class="type">bool</span> <span class="title">QApplication::notify</span><span class="params">(QObject *receiver, QEvent *e)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>事件在发送过程中可以通过事件过滤器进行过滤，默认不对任何产生的事件进行过滤。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 需要先给窗口安装过滤器, 该事件才会触发</span></span><br><span class="line"> [<span class="keyword">virtual</span>] <span class="function"><span class="type">bool</span> <span class="title">QObject::eventFilter</span><span class="params">(QObject *watched, QEvent *event)</span></span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>当事件发送到指定窗口之后，窗口的事件分发器会对收到的事件进行分类:</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">[<span class="keyword">override</span> <span class="keyword">virtual</span> <span class="keyword">protected</span>] <span class="function"><span class="type">bool</span> <span class="title">QWidget::event</span><span class="params">(QEvent *event)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>事件分发器会将分类之后的事件（鼠标事件、键盘事件、绘图事件。。。）分发给对应的事件处理器函数进行处理，每个事件处理器函数都有默认的处理动作（我们也可以重写这些事件处理器函数），比如：鼠标事件：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 鼠标按下</span></span><br><span class="line">[<span class="keyword">virtual</span> <span class="keyword">protected</span>] <span class="function"><span class="type">void</span> <span class="title">QWidget::mousePressEvent</span><span class="params">(QMouseEvent *event)</span></span>;</span><br><span class="line"><span class="comment">// 鼠标释放</span></span><br><span class="line">[<span class="keyword">virtual</span> <span class="keyword">protected</span>] <span class="function"><span class="type">void</span> <span class="title">QWidget::mouseReleaseEvent</span><span class="params">(QMouseEvent *event)</span></span>;</span><br><span class="line"><span class="comment">// 鼠标移动</span></span><br><span class="line">[<span class="keyword">virtual</span> <span class="keyword">protected</span>] <span class="function"><span class="type">void</span> <span class="title">QWidget::mouseMoveEvent</span><span class="params">(QMouseEvent *event)</span></span>;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<p>所以 Qt 的事件处理器函数处于食物链的最末端，每个事件处理器函数都对应一个唯一的事件，这为我们重新定义事件的处理动作提供了便利。另外，<strong>Qt 提供的这些事件处理器函数都是回调函数，也就是说作为使用者我们只需要指定函数的处理动作，关于函数的调用是不需要操心的，当某个事件被触发，Qt框架会调用对应的事件处理器函数</strong>。</p>
+<p>事件处理函数的一般特征：<br>① 受保护的虚函数<br>② 函数名分为两部分: 事件描述 + Event<br>③ 函数带一个事件类型的参数</p>
+<h2 id="消息循环"><a href="#消息循环" class="headerlink" title="消息循环"></a>消息循环</h2><p>消息循环由 <code>QApplication::exec</code> 启动。原理是主线程进入一个由 <code>QEventLoop</code> 管理的无限循环，持续监听来自窗口系统，比如鼠标点击、键盘输入、定时器、网络套接字以及其他线程的事件。</p>
+<p>当一个事件发生时，它会被封装成一个 <code>QEvent</code> 对象并放入对应线程的事件队列中排队。事件循环会不断从队列中取出事件，分发给指定的 <code>QObject</code> 接收者，通过调用该对象的 <code>event</code> 虚函数来处理。这个 <code>event</code> 函数会根据事件类型调用更具体的事件处理器，比如 <code>mousePressEvent</code>。整个应用就在这个循环的驱动下不断响应和处理各种事件，直到调用 <code>quit()</code> 或 <code>exit()</code>，事件循环才会终止。<br><img src="https://files.seeusercontent.com/2026/09/14/5guF/pasted-image-1789388059618.webp"></p>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>QT</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>MVC 对比 MVVM 架构</title>
+    <url>/2026/09/13/C++/QT1/</url>
+    <content><![CDATA[<h2 id="MVC-对比-MVVM-架构"><a href="#MVC-对比-MVVM-架构" class="headerlink" title="MVC 对比 MVVM 架构"></a>MVC 对比 MVVM 架构</h2><p>MVC 中让 View 直接监听 Model 信号，并显示；Controller 负责业务逻辑并修改 Model。整体解耦，虽然 MV 仍有一定耦合，但分开了数据、显示与操作处理，明确了依赖边界。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">V → C → M</span><br><span class="line">↑       │</span><br><span class="line">└───────┘</span><br></pre></td></tr></table></figure>
 
-<p>MVVM 中 ViewModel 处理 Model 数据，让 View 显示（双向绑定），</p>
+<p>MVVM 中 ViewModel 处理 Model 数据，让 View 显示（双向绑定），为界面提供了专门的状态与操作入口，使展示规则可以脱离具体窗口测试。</p>
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">V ↔ VM → M</span><br></pre></td></tr></table></figure>
 
 <table>
@@ -3010,7 +3080,7 @@
 <figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 在构造阶段建立连接：Model 变化时通知 QML 重新读取展示属性</span></span><br><span class="line"><span class="built_in">connect</span>(m_model, &amp;CounterModel::countChanged,</span><br><span class="line">        <span class="keyword">this</span>, [<span class="keyword">this</span>](<span class="type">int</span>) &#123;</span><br><span class="line">    emit <span class="built_in">stateChanged</span>();</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
 <p>QML View：</p>
 <figure class="highlight qml"><table><tr><td class="code"><pre><span class="line"><span class="title">Column</span> &#123;</span><br><span class="line">    <span class="title">Text</span> &#123;</span><br><span class="line">        <span class="comment">// 绑定显示属性，初始化和后续变化都由绑定处理</span></span><br><span class="line">        <span class="attribute">text</span>: vm.displayText</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="title">Button</span> &#123;</span><br><span class="line">        <span class="comment">// 设置按钮文字</span></span><br><span class="line">        <span class="attribute">text</span>: <span class="string">&quot;增加&quot;</span></span><br><span class="line"></span><br><span class="line">        <span class="comment">// 绑定可用状态</span></span><br><span class="line">        <span class="attribute">enabled</span>: vm.canIncrement</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 点击后调用 ViewModel</span></span><br><span class="line">        <span class="attribute">onClicked</span>: vm.increment()</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>整条流程是：<br><strong>点击 → ViewModel → Model 改变 → ViewModel 通知 → QML 绑定重新求值 → 界面更新。</strong><br>你不用手写 <code>label-&gt;setText()</code>，但变化通知仍然必须正确发出，QML 不会凭空知道普通 C++ 成员变量变了。</p>
+<p>整条流程是：<br><strong>点击 → ViewModel → Model 改变 → ViewModel 通知 → QML 绑定重新求值 → 界面更新。</strong><br>不用手写 <code>label-&gt;setText()</code>，但变化通知仍然必须正确发出，QML 不会凭空知道普通 C++ 成员变量变了。</p>
 <p>3．核心区别放在一起看</p>
 <table>
 <thead>
@@ -3065,6 +3135,64 @@
 </div>
         </details>
       </div>
+
+<h3 id="补充：Qt-的-Model-View-Delegate-与-MVC-有什么区别"><a href="#补充：Qt-的-Model-View-Delegate-与-MVC-有什么区别" class="headerlink" title="补充：Qt 的 Model&#x2F;View&#x2F;Delegate 与 MVC 有什么区别"></a>补充：Qt 的 Model&#x2F;View&#x2F;Delegate 与 MVC 有什么区别</h3><p>前面的 MVC、MVVM 用来讨论界面与业务代码如何组织。<br>Qt Widgets 的 <strong>Model&#x2F;View&#x2F;Delegate</strong> 主要用于列表、表格、树形控件的数据展示与编辑：</p>
+<ul>
+<li><strong>Model</strong>：提供数据访问接口。</li>
+<li><strong>View</strong>：管理列表、表格或树的整体展示，以及选中、滚动等交互。</li>
+<li><strong>Delegate</strong>：负责单个数据项怎样绘制，以及编辑时使用什么编辑器。<br><strong>Qt 将传统 MVC 的 View 与部分 Controller 职责合到 View 中，再通过 Delegate 定制数据项的显示和编辑。</strong></li>
+</ul>
+<p>例如表格里有一个“年龄”单元格：</p>
+<table>
+<thead>
+<tr>
+<th>角色</th>
+<th>做什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Model</td>
+<td>提供年龄 <code>18</code>，接受修改后的年龄</td>
+</tr>
+<tr>
+<td>View</td>
+<td>确定这一格的位置，处理选中和开始编辑</td>
+</tr>
+<tr>
+<td>Delegate</td>
+<td>平时绘制 <code>18</code>，编辑时提供数字输入框，提交新值</td>
+</tr>
+</tbody></table>
+<p><strong>Delegate 不是改名后的 Controller。</strong> 它专门处理数据项的绘制和编辑，不负责整个应用的登录、设备连接等业务流程。</p>
+<p>常用的 <code>QStyledItemDelegate</code> 提供这些定制入口：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>paint()</code></td>
+<td>绘制数据项</td>
+</tr>
+<tr>
+<td><code>sizeHint()</code></td>
+<td>提供建议尺寸</td>
+</tr>
+<tr>
+<td><code>createEditor()</code></td>
+<td>创建编辑控件</td>
+</tr>
+<tr>
+<td><code>setEditorData()</code></td>
+<td>将 Model 的数据填入编辑控件</td>
+</tr>
+<tr>
+<td><code>setModelData()</code></td>
+<td>将编辑结果写回 Model</td>
+</tr>
+</tbody></table>
 ]]></content>
       <categories>
         <category>笔记</category>
@@ -3074,28 +3202,91 @@
       </tags>
   </entry>
   <entry>
-    <title>图形学技术栈基础</title>
-    <url>/2026/09/13/%E7%AC%94%E8%AE%B0/%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%9F%BA%E7%A1%80/</url>
+    <title>数据库基础</title>
+    <url>/2026/09/14/%E7%AC%94%E8%AE%B0/%E6%95%B0%E6%8D%AE%E5%BA%93/</url>
     <content><![CDATA[]]></content>
       <categories>
         <category>笔记</category>
       </categories>
       <tags>
-        <tag>图形学</tag>
+        <tag>数据库</tag>
       </tags>
   </entry>
   <entry>
-    <title>音视频技术栈基础</title>
-    <url>/2026/09/12/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%9F%BA%E7%A1%80/</url>
-    <content><![CDATA[<p><code>AVFrame</code> 是未压缩的图像或音频样本，<code>AVPacket</code> 是编码后的数据包。</p>
-<p>PTS 是应该展示的时间，DTS 是解码所需的时间；有帧重排时二者可能不同。time_base 是一个时间刻度的长度：<code>time_base=1/30</code> 时 PTS&#x3D;60 表示 2 秒；音频若以 1&#x2F;48000 为刻度，PTS&#x3D;96000 也表示 2 秒。必须换到同一单位再比较。</p>
-<p>GOP 是一段有参考关系的画面序列。关键帧提供恢复解码的重要入口，常见 P 帧会依赖参考帧。IDR 还承担刷新参考关系的作用，不能把所有“标记为关键”的帧都不加区别地当作万能恢复点。<br><a href="https://blog.csdn.net/wkd_007/article/details/134966687">https://blog.csdn.net/wkd_007/article/details/134966687</a><br><a href="https://www.cnblogs.com/samirchen/p/7071824.html">https://www.cnblogs.com/samirchen/p/7071824.html</a></p>
+    <title>Qt 机制</title>
+    <url>/2026/09/14/C++/QT3/</url>
+    <content><![CDATA[<h2 id="元对象系统（Meta-Object-System）"><a href="#元对象系统（Meta-Object-System）" class="headerlink" title="元对象系统（Meta-Object System）"></a>元对象系统（Meta-Object System）</h2><blockquote>
+<p>元对象系统 &#x3D; 描述一个 QObject 对象自身信息，并提供信号槽、属性、运行时类型信息、动态调用等能力的机制。</p>
+</blockquote>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span> : <span class="keyword">public</span> QObject</span><br><span class="line">&#123;</span><br><span class="line">    Q_OBJECT</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Person</span>(QObject *parent = <span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line">signals:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">ageChanged</span><span class="params">(<span class="type">int</span> age)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> slots:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">setAge</span><span class="params">(<span class="type">int</span> age)</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><strong>必须继承自 <code>QObject</code>，并声明 <code>Q_OBJECT</code> 宏，QT 会给 <code>Person</code> 生成额外的<em>元信息</em>。</strong><br>比如：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">Person</span><br><span class="line">│</span><br><span class="line">├── 类名：<span class="string">&quot;Person&quot;</span></span><br><span class="line">│</span><br><span class="line">├── 父类：QObject</span><br><span class="line">│</span><br><span class="line">├── Signal</span><br><span class="line">│   └── <span class="built_in">ageChanged</span>(<span class="type">int</span>)</span><br><span class="line">│</span><br><span class="line">├── Slot</span><br><span class="line">│   └── <span class="built_in">setAge</span>(<span class="type">int</span>)</span><br><span class="line">│</span><br><span class="line">└── Property</span><br><span class="line">    └── ...</span><br></pre></td></tr></table></figure>
+<p>于是 Qt 可以实现很多普通 C++ 不直接提供的功能。<br>比如<strong>可以在运行时得到类名</strong>：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">p-&gt;<span class="built_in">metaObject</span>()-&gt;<span class="built_in">className</span>();</span><br></pre></td></tr></table></figure>
+<p>还有信号槽机制，Signal &#x2F; Slot：</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="built_in">connect</span>(sender, &amp;Sender::dataReady,</span><br><span class="line">        receiver, &amp;Receiver::handleData);</span><br></pre></td></tr></table></figure>
+
+<h2 id="信号-槽"><a href="#信号-槽" class="headerlink" title="信号&#x2F;槽"></a>信号&#x2F;槽</h2><h3 id="定义信号和槽"><a href="#定义信号和槽" class="headerlink" title="定义信号和槽"></a>定义信号和槽</h3><ul>
+<li>信号（Signal）：在类中使用 <code>signals</code>: 标签声明信号函数。信号函数不需要实现，只需声明即可。<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">signals:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">buttonClicked</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure></li>
+<li>槽（Slot）：使用 <code>slots</code>: 标签声明普通成员函数作为槽函数，也可以是静态函数、Lambda 表达式等。<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> slots:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">handleButtonClick</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="连接信号和槽"><a href="#连接信号和槽" class="headerlink" title="连接信号和槽"></a>连接信号和槽</h3><p>通过 <code>QObject::connect()</code> 函数绑定信号与槽。当信号被触发时，对应的槽函数就会自动执行。<br><strong>信号和槽是多对多的关系。</strong></p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function">QMetaObject::Connection <span class="title">connect</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">const</span> QObject *sender,    <span class="comment">// 信号发送者（不能为nullptr）</span></span></span></span><br><span class="line"><span class="params"><span class="function">    PointerToMemberFunction signal,  <span class="comment">// 发送者的信号（成员函数指针，如&amp;A::signalFunc）</span></span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="type">const</span> QObject *receiver,  <span class="comment">// 槽函数的接收者（默认this，可为nullptr，若槽是全局函数）</span></span></span></span><br><span class="line"><span class="params"><span class="function">    PointerToMemberFunction method,  <span class="comment">// 接收者的槽函数（成员函数指针，如&amp;B::slotFunc）</span></span></span></span><br><span class="line"><span class="params"><span class="function">    Qt::ConnectionType type = Qt::AutoConnection  <span class="comment">// 连接类型</span></span></span></span><br><span class="line"><span class="params"><span class="function">)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="发出信号"><a href="#发出信号" class="headerlink" title="发出信号"></a>发出信号</h3><p>当某个事件发生时（如用户点击按钮、数据更新完成等），通过调用 <code>emit</code> 关键字来发射信号。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function">emit <span class="title">buttonClicked</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+<p>一旦信号被发出，所有与其连接的槽函数都会按照连接顺序依次执行。</p>
+<h2 id="事件队列"><a href="#事件队列" class="headerlink" title="事件队列"></a>事件队列</h2><p><code>.exec()</code> 启动了 QT <strong>主线程的事件循环</strong>，事件加入 Event Queue（事件队列）逐个处理。<br>跨线程的 queued signal&#x2F;slot 调用，需要依靠接收方线程的事件循环来完成调度。</p>
+<p><code>connect()</code> 函数的第五个参数（连接类型）：</p>
+<table>
+<thead>
+<tr>
+<th>连接类型</th>
+<th>行为说明</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Qt::AutoConnection</code></td>
+<td>自动选择：若发送者和接收者在同一线程，等价于 <code>DirectConnection</code>；否则等价于 <code>QueuedConnection</code>（默认值）</td>
+<td>默认值</td>
+</tr>
+<tr>
+<td><code>Qt::DirectConnection</code></td>
+<td>信号发射时立即同步调用槽函数（在发送者线程执行），类似直接调用槽函数</td>
+<td>同线程内高效通信，无延迟</td>
+</tr>
+<tr>
+<td><code>Qt::QueuedConnection</code></td>
+<td>信号被封装为事件放入接收者线程的事件循环，异步调用槽函数（在接收者线程执行）。</td>
+<td>跨线程通信（如子线程通知主线程更新 UI）</td>
+</tr>
+<tr>
+<td><code>Qt::BlockingQueuedConnection</code></td>
+<td>类似 <code>QueuedConnection</code>，但接收者线程会阻塞，直到槽函数执行完成（必须确保发送者和接收者不在同一线程，否则死锁）</td>
+<td>子线程需等待主线程处理结果后再继续</td>
+</tr>
+<tr>
+<td><code>Qt::UniqueConnection</code></td>
+<td>确保连接唯一（若已存在相同连接，则不重复创建），需与其他类型组合（如 &#96;Qt::AutoConnection）</td>
+<td>防止重复连接调用多次槽函数</td>
+</tr>
+</tbody></table>
+<p>即使没有跨线程，<code>QueuedConnection</code> 和 <code>DirectConnection</code> 的执行时机仍然不同，前者需要入队等待，后者立即调用。</p>
+<h2 id="MOC-Meta-Object-Compiler"><a href="#MOC-Meta-Object-Compiler" class="headerlink" title="MOC (Meta-Object Compiler)"></a>MOC (Meta-Object Compiler)</h2><blockquote>
+<p>元对象编译器，实际是一个代码生成工具。<br>因为 Qt 的元对象系统需要一些额外信息，而标准 C++ 编译器本身不会因为写了 <code>Q_OBJECT</code> 就自动生成这些东西。</p>
+</blockquote>
+<p>在编译前，moc 会解析这些继承自 <code>QObject</code>，并包含 <code>Q_OBJECT</code> 宏类的头文件，为带有 <code>signals</code> 和 <code>slots</code> 关键字的函数以及其他元对象特性生成一个额外的 C++ 源文件。这个源文件包含了每个信号的实现体和一个静态的 <code>QMetaObject</code> 实例，该实例存储了类的元信息，比如信号和槽的字符串表。当调用 <code>connect</code> 函数将一个信号连接到一个槽时，实际上是在一个全局的哈希表中注册了这个连接，表中记录了发送者对象、信号签名、接收者对象和槽签名。最后，当你使用 <code>emit</code> 关键字发出一个信号时，<code>QObject</code> 的 <code>qt_metacall</code> 或相关函数会被调用，它会根据传入的信号索引在元对象中查找所有连接到该信号的槽，并依次调用它们。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">声明 Q_OBJECT</span><br><span class="line">   ↓</span><br><span class="line">告诉 Qt：</span><br><span class="line">“这个类需要元对象功能”</span><br><span class="line">   ↓</span><br><span class="line">moc 扫描</span><br><span class="line">   ↓</span><br><span class="line">生成 C++ 代码</span><br><span class="line">   ↓</span><br><span class="line">实现元对象系统</span><br></pre></td></tr></table></figure>
+
+<h2 id="对象树"><a href="#对象树" class="headerlink" title="对象树"></a>对象树</h2><p>Qt 的对象树是一种基于父子关系的层级结构，用于管理所有继承自 <code>QObject</code> 的对象。当创建一个 <code>QObject</code> 并为其指定一个父对象时，该对象就会被自动添加到父对象的子对象列表中。</p>
+<p>这种机制最核心的优势在于自动化内存管理，当父对象被销毁时，Qt 会自动遍历并销毁其所有的子对象。我们在开发中只需要手动管理顶层对象，拥有的所有子对象都会被清理。<br><img src="/%5Blink%5D(https:/files.seeusercontent.com/2026/09/14/wT9g/pasted-image-1789393099947.webp)"></p>
 ]]></content>
       <categories>
         <category>笔记</category>
       </categories>
       <tags>
-        <tag>音视频</tag>
+        <tag>QT</tag>
       </tags>
   </entry>
 </search>
